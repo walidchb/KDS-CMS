@@ -24,3 +24,54 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+
+.table-container {
+  overflow-x: auto;
+  max-width: 100%;
+  border-radius: 8px;
+}
+
+.custom-table {
+  border-collapse: collapse;
+  border-radius: 8px;
+  width: 100%;
+}
+
+.custom-table td:last-child,
+.custom-table th:last-child,
+.custom-table td:first-child,
+.custom-table th:first-child {
+  position: sticky;
+}
+
+.custom-table td:first-child,
+.custom-table th:first-child {
+  left: 0;
+  z-index: 2;
+}
+
+.custom-table td:last-child,
+.custom-table th:last-child {
+  right: 0;
+  z-index: 1;
+}
+
+/* .custom-table td {
+  background-color: white;
+} */
+
+@media (max-width: 767px) {
+  .custom-table td:first-child,
+  .custom-table th:first-child {
+    position: sticky;
+    left: 0;
+    z-index: 2;
+  }
+  .custom-table td:last-child,
+  .custom-table th:last-child {
+    position: relative;
+    right: auto;
+    z-index: auto;
+  }
+}
