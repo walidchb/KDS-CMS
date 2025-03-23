@@ -1,6 +1,11 @@
 const express = require('express');
 const router = express.Router();
 const { prisma } = require('../lib/prisma.cjs');
+const uploadImageToCloudinary = require('../utils/uploadImageToCloudinary');
+const multer = require('multer');
+const upload = multer({ dest: 'uploads/' }); // saves files to /uploads
+
+
 
 // GET /api/products — Get all products with relations
 router.get('/', async (req, res) => {
@@ -162,15 +167,15 @@ router.get('/:id', async (req, res) => {
 });
 
 // POST /api/products — Create product
-router.post('/', async (req, res) => {
+router.post('/',upload.single('image'), async (req, res) => {
   const {
     name,
     description,
-    image,
     categoryId,
     subCategoryId,
     ListDescription,
   } = req.body;
+
 
   const category = await prisma.category.findUnique({
     where: { id: String(categoryId) }
@@ -178,16 +183,24 @@ router.post('/', async (req, res) => {
   const subcategory = await prisma.subCategory.findUnique({
     where: { id: String(subCategoryId) , categoryId: String(categoryId) } 
   });
+ 
   if (!category || !subcategory) {
     return res.status(404).json({ error: 'Category or SubCategory not found' });
   }
+
+  if (!req.file) {
+    return res.status(400).json({ error: 'No file uploaded' });
+  }
+
+  const imageUrl = await uploadImageToCloudinary(req.file.path);
+  // ...save to DB
 
   try {
     const newProduct = await prisma.product.create({
       data: {
         name,
         description,
-        image,
+        image: imageUrl,
         categoryId: String(categoryId),
         subCategoryId: String(subCategoryId),
         ListDescription: {
