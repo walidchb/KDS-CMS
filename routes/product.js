@@ -174,6 +174,7 @@ router.post('/',upload.single('image'), async (req, res) => {
     categoryId,
     subCategoryId,
     ListDescription,
+    fields,
   } = req.body;
 
 
@@ -208,6 +209,15 @@ router.post('/',upload.single('image'), async (req, res) => {
         },
       },
     });
+
+    if (fields.length === 0) {
+      const dynamicProduct = await prisma.dynamicProduct.create({
+        data: {
+          fields: fields,
+          productId: newProduct.id,
+        },
+      });
+    }
 
     res.status(201).json(newProduct);
   } catch (err) {
@@ -310,6 +320,76 @@ router.delete('/:id', async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(400).json({ error: 'Could not delete product.' });
+  }
+});
+
+// POST /api/products/:id/dynamic — Create dynamic fields for product
+router.post('/:id/dynamic', async (req, res) => {
+  const { id } = req.params;
+  const { fields } = req.body;
+
+  try {
+    const dynamicProduct = await prisma.dynamicProduct.create({
+      data: {
+        fields,
+        productId: String(id),
+      },
+    });
+
+    res.json(dynamicProduct);
+  } catch (err) {
+    console.error(err);
+    res.status(400).json({ error: 'Could not create dynamic fields.' });
+  }
+});
+
+//GET /api/products/:id/dynamic — Get dynamic fields for product
+router.get('/:id/dynamic', async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const dynamic = await prisma.dynamicProduct.findUnique({
+      where: { productId: String(id) },
+    });
+
+    res.json(dynamic.fields);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to fetch dynamic fields.' });
+  }
+});
+
+// PUT /api/products/:id/dynamic — Update dynamic fields for product
+router.patch('/:id/dynamic', async (req, res) => {
+  const { id } = req.params;
+  const { fields } = req.body;
+
+  try {
+    const updated = await prisma.dynamicProduct.update({
+      where: { productId: String(id) },
+      data: { fields },
+    });
+
+    res.json(updated);
+  } catch (err) {
+    console.error(err);
+    res.status(400).json({ error: 'Could not update dynamic fields.' });
+  }
+});
+
+// DELETE /api/products/:id/dynamic — Delete dynamic fields for product
+router.delete('/:id/dynamic', async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    await prisma.dynamicProduct.delete({
+      where: { productId: String(id) },
+    });
+
+    res.status(200).end();
+  } catch (err) {
+    console.error(err);
+    res.status(400).json({ error: 'Could not delete dynamic fields.' });
   }
 });
 

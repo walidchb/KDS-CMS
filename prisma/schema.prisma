@@ -38,6 +38,7 @@ model Product {
   Category Category @relation(fields: [categoryId], references: [id])
   SubCategory SubCategory @relation(fields: [subCategoryId], references: [id])
   ListDescription listDescription[]
+  DynamicProduct DynamicProduct[]
 
 }
 
@@ -47,3 +48,11 @@ model listDescription {
   productId String
   Product Product @relation(fields: [productId], references: [id])
 }
+
+model DynamicProduct {
+  id      Int      @id @default(autoincrement())
+  fields  Json
+  productId String @unique 
+  Product Product @relation(fields: [productId], references: [id])
+}
+
