@@ -6,10 +6,8 @@ import {
   IoChevronUpOutline,
 } from "react-icons/io5";
 import { IColumnType, Table } from "./Table";
-import ButtonWithIcon from "./buttonWithIcon";
+import ButtonWithIcon from "./ButtonWithIcon";
 import { IoMdAdd } from "react-icons/io";
-import Modal from "./Modal";
-import { TbCancel } from "react-icons/tb";
 import AddEditCatSubCat from "./AddEditCatSubCat";
 import DeleteConfirmationModal from "./DeleteConfirmationModal";
 
@@ -45,23 +43,38 @@ const mockData: Category[] = [
 
 export default function CategoryContent(): JSX.Element {
   const [openCategories, setOpenCategories] = useState<number[]>([]);
-
+  const [editMode, setEditMode] = useState(true);
+  const [subMode, setSubMode] = useState(true);
+  const [selectedItem, setSelectedItem] = useState<{
+    id: string | number | null;
+    name: string | null;
+  }>({ id: null, name: "" });
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showAddEditModal, setShowAddEditModal] = useState(false);
   const toggleCategory = (id: number) => {
     setOpenCategories((prev) =>
       prev.includes(id) ? prev.filter((catId) => catId !== id) : [...prev, id]
     );
   };
 
-  const handleEditCategory = (categoryId: number) => {
-    console.log("Edit Category", categoryId);
+  const handleEditCategory = (categoryId: number | string, name: string) => {
+    setEditMode(true);
+    setSubMode(false);
+    setSelectedItem({ id: categoryId, name: name });
+    setShowAddEditModal(true);
   };
 
-  const handleEditSub = (subId: number) => {
-    console.log("Edit Subcategory", subId);
+  const handleEditSub = (subId: number | number | null, name: string) => {
+    setEditMode(true);
+    setSubMode(true);
+    setSelectedItem({ id: subId, name: name });
+    setShowAddEditModal(true);
   };
 
-  const handleDeleteSub = (subId: number) => {
-    console.log("Delete Subcategory", subId);
+  const handleDeleteSub = (subId: number | string | null, name: string) => {
+    setSubMode(true);
+    setSelectedItem({ id: subId, name: name });
+    setShowDeleteModal(true);
   };
 
   // Columns typed according to your IColumnType pattern
@@ -84,17 +97,17 @@ export default function CategoryContent(): JSX.Element {
         <span className="flex justify-center items-center">Actions</span>
       ),
       width: 100,
-      render: (_, { id }) => (
+      render: (_, { id, name }) => (
         <div className="flex justify-center items-center gap-4">
           <div
-            onClick={() => handleEditSub(id)}
+            onClick={() => handleEditSub(id, name)}
             className="bg-blue-200 flex justify-center items-center w-8 h-8 rounded-md"
           >
             <CiEdit className="w-5 h-5 text-black cursor-pointer" />
           </div>
 
           <div
-            onClick={() => handleDeleteSub(id)}
+            onClick={() => handleDeleteSub(id, name)}
             className="bg-red-200 flex justify-center items-center w-8 h-8 rounded-md"
           >
             <IoTrashOutline className="w-5 h-5 text-red-500 cursor-pointer" />
@@ -104,42 +117,27 @@ export default function CategoryContent(): JSX.Element {
     },
   ];
 
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [isSubCategory, setIsSubCategory] = useState(false);
+  // const [isSubCategory, setIsSubCategory] = useState(false);
 
-  const handleDelete = () => {
-    console.log("Item deleted:", isSubCategory ? "Sub-category" : "Category");
-    setShowDeleteModal(false);
+  const handleAddSubCategory = (categoryId: number) => {
+    setEditMode(false);
+    setSubMode(true);
+    setSelectedItem({ id: categoryId, name: "" });
+    setShowAddEditModal(true);
   };
 
-  const [modalOpen, setModalOpen] = useState(false);
-  const [editMode, setEditMode] = useState(true);
-  const [subMode, setSubMode] = useState(true);
-  const [selectedName, setSelectedName] = useState("");
-
-  const handleOpenModal = (edit: boolean, sub: boolean, name = "") => {
-    setEditMode(edit);
-    setSubMode(sub);
-    setSelectedName(name);
-    setModalOpen(true);
+  const handleDeleteCategory = (categoryId: number, name: string) => () => {
+    setEditMode(false);
+    setSubMode(false);
+    setSelectedItem({ id: categoryId, name: name });
+    setShowDeleteModal(true);
   };
 
-  const handleSave = (name: string) => {
-    if (editMode) {
-      console.log(
-        "Updating:",
-        subMode ? "Sub-category" : "Category",
-        "to",
-        name
-      );
-    } else {
-      console.log(
-        "Adding new",
-        subMode ? "Sub-category" : "Category",
-        "named",
-        name
-      );
-    }
+  const handleAddCategory = () => {
+    setEditMode(false);
+    setSubMode(false);
+    setSelectedItem({ id: null, name: "" });
+    setShowAddEditModal(true);
   };
 
   return (
@@ -152,7 +150,7 @@ export default function CategoryContent(): JSX.Element {
           className="bg-gray-600 px-2 h-10 text-white"
           label="Add category"
           icon={<IoMdAdd className="text-white" />}
-          onClick={() => {}}
+          onClick={() => handleAddCategory()}
         />
       </div>
       {mockData.map((category) => (
@@ -177,18 +175,24 @@ export default function CategoryContent(): JSX.Element {
                 className="bg-blue-500 px-2 h-10 text-white"
                 label="Add Sub-category"
                 icon={<IoMdAdd className="text-white" />}
-                onClick={() => {}}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleAddSubCategory(category.id);
+                }}
               />
               <div
                 className="bg-purple-100 flex justify-center items-center w-8 h-8 rounded-md"
                 onClick={(e) => {
                   e.stopPropagation();
-                  handleEditCategory(category.id);
+                  handleEditCategory(category.id, category.name);
                 }}
               >
                 <CiEdit className="w-5 h-5 text-black cursor-pointer" />
               </div>
-              <div className="bg-red-100 flex justify-center items-center w-8 h-8 rounded-md">
+              <div
+                onClick={handleDeleteCategory(category.id, category.name)}
+                className="bg-red-100 flex justify-center items-center w-8 h-8 rounded-md"
+              >
                 <IoTrashOutline className="w-5 h-5 cursor-pointer" />
               </div>
             </div>
@@ -213,18 +217,23 @@ export default function CategoryContent(): JSX.Element {
 
       <DeleteConfirmationModal
         isOpen={showDeleteModal}
-        onClose={() => setShowDeleteModal(false)}
-        onConfirm={handleDelete}
-        isSubCategory={isSubCategory}
+        onClose={() => {
+          setSelectedItem({ id: null, name: "" });
+          setShowDeleteModal(false);
+        }}
+        isSubCategory={subMode}
+        name={selectedItem?.name}
       />
 
       <AddEditCatSubCat
-        isOpen={modalOpen}
-        onClose={() => setModalOpen(false)}
+        isOpen={showAddEditModal}
+        onClose={() => {
+          setSelectedItem({ id: null, name: "" });
+          setShowAddEditModal(false);
+        }}
         isEdit={editMode}
         isSubCategory={subMode}
-        initialName={selectedName}
-        onSubmit={handleSave}
+        selectedItem={selectedItem}
       />
     </div>
   );

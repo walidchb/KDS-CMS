@@ -8,8 +8,10 @@ interface AddEditCategoryModalProps {
   onClose: () => void;
   isEdit: boolean;
   isSubCategory: boolean;
-  initialName?: string;
-  onSubmit?: (name: unknown) => void;
+  selectedItem: {
+    id: string | number | null;
+    name: string | null;
+  };
 }
 
 const AddEditCategoryModal: React.FC<AddEditCategoryModalProps> = ({
@@ -17,26 +19,19 @@ const AddEditCategoryModal: React.FC<AddEditCategoryModalProps> = ({
   onClose,
   isEdit,
   isSubCategory,
-  initialName = "",
-  onSubmit,
+  selectedItem,
 }) => {
-  const [name, setName] = useState(initialName);
+  const [name, setName] = useState(selectedItem?.name || "");
 
   const handleSubmit = () => {
-    if (name.trim() === "") {
-      alert("Le nom ne peut pas être vide.");
-      return;
-    }
-    if (onSubmit) {
-      onSubmit(name);
-    }
+    console.log(name);
     onClose();
   };
 
   // Reset name when modal closes or opens
   React.useEffect(() => {
-    setName(initialName);
-  }, [initialName, isOpen]);
+    setName(selectedItem?.name || "");
+  }, [selectedItem, isOpen]);
 
   if (!isOpen) return null;
 
@@ -64,20 +59,20 @@ const AddEditCategoryModal: React.FC<AddEditCategoryModalProps> = ({
         type="text"
         placeholder="Nom"
         className="w-full border border-blue-300 rounded-md p-2 outline-none focus:ring-2 focus:ring-blue-500 my-4"
-        value={name}
+        value={name || ""}
         onChange={(e) => setName(e.target.value)}
       />
 
       <div className="flex justify-end space-x-2 mt-4">
         <ButtonWithIcon
-          label={isEdit ? "Enregistrer" : "Ajouter"}
-          className="bg-blue-700 text-white h-10"
-          onClick={handleSubmit}
+          label="Annuler"
+          className="bg-white text-blue-700   px-2"
+          onClick={onClose}
         />
         <ButtonWithIcon
-          label="Annuler"
-          className="bg-white text-blue-700 border border-blue-700 h-10"
-          onClick={onClose}
+          label={isEdit ? "Enregistrer" : "Ajouter"}
+          className="bg-blue-700 text-white h-10 px-2"
+          onClick={handleSubmit}
         />
       </div>
     </Modal>

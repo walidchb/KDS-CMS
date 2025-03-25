@@ -1,10 +1,13 @@
 import React, { JSX, useState } from "react";
 import { CiEdit } from "react-icons/ci";
 import { IoTrashOutline } from "react-icons/io5";
+import { FaRegEye } from "react-icons/fa";
+
 import { IoMdAdd } from "react-icons/io";
 import { IColumnType, Table } from "./Table";
 import ButtonWithIcon from "./buttonWithIcon";
 import DeleteConfirmationModal from "./DeleteConfirmationModal";
+import ViewProductModal from "./ProductDetails";
 // import AddEditProductModal from "./AddEditCatSubCat"; // You need to create this
 import AddEditProductModal from "./AddEditProduct";
 
@@ -15,13 +18,13 @@ interface Product {
   subCategory: string;
 }
 
-interface ProductProps {
-  id?: number;
-  name: string;
-  bullets: string[];
-  description: string;
-  table: string[][];
-}
+// interface ProductProps {
+//   id?: number;
+//   name: string;
+//   bullets: string[];
+//   description: string;
+//   table: string[][];
+// }
 
 const mockProducts: Product[] = [
   {
@@ -41,19 +44,25 @@ const mockProducts: Product[] = [
 export default function ProductsContent(): JSX.Element {
   const [products, setProducts] = useState<Product[]>(mockProducts);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [selectedProductId, setSelectedProductId] = useState<number | null>(
-    null
-  );
-
-  const [modalOpen, setModalOpen] = useState(true);
+  const [selectedProductToDelete, setselectedProductToDelete] = useState<{
+    id: string | number | null;
+    name: string | null;
+  }>({ id: null, name: "" });
+  const [selectedProductId, setSelectedProductId] = useState<
+    number | string | null
+  >(null);
+  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
+  const [addEditModal, setAddEditModal] = useState(false);
   const [editMode, setEditMode] = useState(false);
-  const [selectedProduct, setSelectedProduct] = useState<ProductProps | null>(
-    null
-  );
 
-  const handleDeleteClick = (id: number) => {
-    setSelectedProductId(id);
+  const handleDeleteClick = (id: number, name: string) => {
+    setselectedProductToDelete({ id: id, name: name });
     setShowDeleteModal(true);
+  };
+
+  const handleViewClick = (product: Product) => {
+    setSelectedProductId(product.id);
+    setIsDetailsModalOpen(true);
   };
 
   const handleDelete = () => {
@@ -63,35 +72,29 @@ export default function ProductsContent(): JSX.Element {
 
   const handleEditClick = (product: Product) => {
     setEditMode(true);
-    setSelectedProduct({
-      id: product.id,
-      name: product.name,
-      bullets: [], // Provide default or actual values
-      description: "", // Provide default or actual values
-      table: [], // Provide default or actual values
-    });
-    setModalOpen(true);
+    setSelectedProductId(product.id);
+
+    setAddEditModal(true);
   };
 
   const handleAddProduct = () => {
     setEditMode(false);
-    setSelectedProduct(null);
-    setModalOpen(true);
+    // setSelectedProduct(null);
+    setAddEditModal(true);
   };
 
-  const handleSave = (newProduct: Product) => {
-    if (editMode) {
-      setProducts((prev) =>
-        prev.map((p) => (p.id === newProduct.id ? newProduct : p))
-      );
-    } else {
-      setProducts((prev) => [
-        ...prev,
-        { ...newProduct, id: Date.now() }, // Temporary ID
-      ]);
-    }
-    setModalOpen(false);
-  };
+  // const handleSave = (newProduct: Product) => {
+  //   if (editMode) {
+  //     setProducts((prev) =>
+  //       prev.map((p) => (p.id === newProduct.id ? newProduct : p))
+  //     );
+  //   } else {
+  //     setProducts((prev) => [
+  //       ...prev,
+  //       { ...newProduct, id: Date.now() }, // Temporary ID
+  //     ]);
+  //   }
+  // };
 
   const productColumns: IColumnType<Product>[] = [
     {
@@ -122,10 +125,18 @@ export default function ProductsContent(): JSX.Element {
     {
       key: "actions",
       title: "Actions",
-      renderTitle: () => <span className="text-center">Actions</span>,
+      renderTitle: () => (
+        <span className="flex justify-center items-center">Actions</span>
+      ),
       width: 100,
       render: (_, product) => (
         <div className="flex justify-center items-center gap-4">
+          <div
+            onClick={() => handleViewClick(product)}
+            className="bg-green-200 flex justify-center items-center w-8 h-8 rounded-md"
+          >
+            <FaRegEye className="w-5 h-5 text-black cursor-pointer" />
+          </div>
           <div
             onClick={() => handleEditClick(product)}
             className="bg-blue-200 flex justify-center items-center w-8 h-8 rounded-md"
@@ -133,7 +144,7 @@ export default function ProductsContent(): JSX.Element {
             <CiEdit className="w-5 h-5 text-black cursor-pointer" />
           </div>
           <div
-            onClick={() => handleDeleteClick(product.id)}
+            onClick={() => handleDeleteClick(product.id, product.name)}
             className="bg-red-200 flex justify-center items-center w-8 h-8 rounded-md"
           >
             <IoTrashOutline className="w-5 h-5 text-red-500 cursor-pointer" />
@@ -143,18 +154,17 @@ export default function ProductsContent(): JSX.Element {
     },
   ];
 
-  const handleSaveProduct = (newProduct: Product) => {
-    if (editMode) {
-      // Update product
-      setProducts((prev) =>
-        prev.map((p) => (p.id === newProduct.id ? newProduct : p))
-      );
-    } else {
-      // Add product
-      setProducts((prev) => [...prev, { ...newProduct, id: Date.now() }]);
-    }
-    setModalOpen(false);
-  };
+  // const handleSaveProduct = (newProduct: Product) => {
+  //   if (editMode) {
+  //     // Update product
+  //     setProducts((prev) =>
+  //       prev.map((p) => (p.id === newProduct.id ? newProduct : p))
+  //     );
+  //   } else {
+  //     // Add product
+  //     setProducts((prev) => [...prev, { ...newProduct, id: Date.now() }]);
+  //   }
+  // };
 
   return (
     <div className="space-y-4 p-10 text-black">
@@ -181,14 +191,21 @@ export default function ProductsContent(): JSX.Element {
         onClose={() => setShowDeleteModal(false)}
         onConfirm={handleDelete}
         isSubCategory={false}
+        isProduct={true}
+        name={selectedProductToDelete?.name}
       />
 
       <AddEditProductModal
-        isOpen={false}
+        isOpen={addEditModal}
         isEdit={editMode}
-        product={selectedProduct}
-        onClose={() => setModalOpen(false)}
-        // onSubmit={handleSaveProduct}
+        product={selectedProductId}
+        onClose={() => setAddEditModal(false)}
+      />
+
+      <ViewProductModal
+        isOpen={isDetailsModalOpen}
+        product={selectedProductId}
+        onClose={() => setIsDetailsModalOpen(false)}
       />
     </div>
   );

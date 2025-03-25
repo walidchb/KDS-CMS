@@ -6,15 +6,19 @@ import ButtonWithIcon from "./buttonWithIcon";
 interface DeleteConfirmationModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onConfirm: () => void;
+
   isSubCategory?: boolean;
+  isProduct?: boolean;
+  name?: string | null;
 }
 
 const DeleteConfirmationModal: React.FC<DeleteConfirmationModalProps> = ({
   isOpen,
   onClose,
-  onConfirm,
+
   isSubCategory = false,
+  name,
+  isProduct = false,
 }) => {
   if (!isOpen) return null;
 
@@ -29,19 +33,24 @@ const DeleteConfirmationModal: React.FC<DeleteConfirmationModalProps> = ({
 
       <p className="text-gray-800 font-inter text-md font-normal my-4">
         {`Confirmez-vous la suppression de ${
-          isSubCategory ? "la sous-catégorie" : "la catégorie"
-        } ?`}
+          isProduct
+            ? "le produit: "
+            : isSubCategory
+            ? "la sous-catégorie : "
+            : "la catégorie: "
+        } `}{" "}
+        <span className="font-semibold">{name}</span> {`?`}
       </p>
 
       <div className="flex justify-end space-x-2">
         <ButtonWithIcon
           label="Oui, Confirmer"
           className="bg-white text-red-700 h-10"
-          onClick={onConfirm}
+          onClick={() => {}}
         />
         <ButtonWithIcon
           label="Retour"
-          className="bg-red-700 text-white h-10"
+          className="bg-red-700 px-2 text-white h-10"
           onClick={onClose}
         />
       </div>
