@@ -33,6 +33,13 @@ export async function PATCH(
 ) {
   const { name, categoryId } = await req.json();
 
+  const existingSubCategory = await prisma.subCategory.findMany({
+    where: { name },
+  });
+  if (existingSubCategory) {
+    return NextResponse.json({ error: 'Subcategory name already exists.' }, { status: 400 });
+  }
+
   try {
     const updated = await prisma.subCategory.update({
       where: { id: params.id },

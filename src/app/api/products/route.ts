@@ -22,12 +22,14 @@ export async function GET(req: NextRequest) {
         id: true,
         name: true,
         description: true,
-        image: true,
         ListDescription: { select: { description: true } },
         Category: { select: { id: true, name: true } },
         SubCategory: { select: { id: true, name: true } },
+        DynamicProduct: { select: { fields: true } },
+        ImageProduct: { select: { image: true } },
       },
     });
+
 
     return NextResponse.json(products);
   } catch (err) {
@@ -43,16 +45,14 @@ export async function POST(req: NextRequest) {
   const description = formData.get('description')?.toString() ?? '';
   const categoryId = formData.get('categoryId')?.toString() ?? '';
   const subCategoryId = formData.get('subCategoryId')?.toString() ?? '';
-  const listDescription = JSON.parse(formData.get('listDescription')?.toString() ?? '[]');
-  const fields = JSON.parse(formData.get('fields')?.toString() ?? '[]');
-  const file = formData.get('image') as File;
+  const listDescription = JSON.parse(formData.get('listDescription')?.toString() ?? '[]') || '[]';
+  const fields = JSON.parse(formData.get('fields')?.toString() ?? '[]') || '[]';
+  const files = formData.getAll('images') as File[];
 
-  if (!file || !file.size) {
-    return NextResponse.json({ error: 'No file uploaded' }, { status: 400 });
-  }
+  // if (!files || files.length === 0) {
+  //   return NextResponse.json({ error: 'No files uploaded' }, { status: 400 });
+  // }
 
-  const buffer = Buffer.from(await file.arrayBuffer());
-  const imageUrl = await uploadImageToCloudinary(buffer);
 
   const category = await prisma.category.findUnique({ where: { id: categoryId } });
   const subcategory = await prisma.subCategory.findUnique({
@@ -68,16 +68,12 @@ export async function POST(req: NextRequest) {
       data: {
         name,
         description,
-        image: imageUrl,
         categoryId,
         subCategoryId,
-        ListDescription: {
-          create: listDescription.map((desc: string) => ({ description: desc })),
-        },
       },
     });
 
-    if (fields.length) {
+    if (fields !=  '[]') {
       await prisma.dynamicProduct.create({
         data: {
           productId: product.id,
@@ -85,6 +81,30 @@ export async function POST(req: NextRequest) {
         },
       });
     }
+
+    if (listDescription != '[]') {
+      await prisma.listDescription.createMany({
+        data: listDescription.map((desc: string) => ({
+          productId: product.id,
+          description: desc,
+        })),
+      });
+    }
+    for (const file of files) {
+      if (!(file instanceof File) || file.size === 0) {
+        return NextResponse.json({ error: 'One or more files are invalid' }, { status: 400 });
+      }
+      const buffer = Buffer.from(await file.arrayBuffer());
+      const imageUrl = await uploadImageToCloudinary(buffer);
+      await prisma.imageProduct.createMany({
+        data: {
+          productId: product.id,
+          image: imageUrl,
+        },
+      });
+  
+    }
+
 
     return NextResponse.json(product, { status: 201 });
   } catch (err) {

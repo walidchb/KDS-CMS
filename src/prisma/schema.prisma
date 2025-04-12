@@ -32,13 +32,13 @@ model Product {
   id        String   @id @default(cuid())
   name String
   description String
-  image String
   categoryId String
   subCategoryId String
   Category Category @relation(fields: [categoryId], references: [id])
   SubCategory SubCategory @relation(fields: [subCategoryId], references: [id])
   ListDescription listDescription[]
   DynamicProduct DynamicProduct[]
+  ImageProduct ImageProduct[]
 
 }
 
@@ -53,6 +53,13 @@ model DynamicProduct {
   id      Int      @id @default(autoincrement())
   fields  Json
   productId String @unique 
+  Product Product @relation(fields: [productId], references: [id])
+}
+
+model ImageProduct {
+  id        String   @id @default(cuid())
+  image String
+  productId String
   Product Product @relation(fields: [productId], references: [id])
 }
 

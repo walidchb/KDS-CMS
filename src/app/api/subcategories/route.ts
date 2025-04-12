@@ -31,6 +31,12 @@ export async function POST(req: NextRequest) {
   if (!category) {
     return NextResponse.json({ error: 'Category not found' }, { status: 404 });
   }
+  const existingSubCategory = await prisma.subCategory.findMany({
+    where: { name },
+  });
+  if (existingSubCategory) {
+    return NextResponse.json({ error: 'Subcategory already exists.' }, { status: 400 });
+  }
 
   try {
     const newSubCategory = await prisma.subCategory.create({

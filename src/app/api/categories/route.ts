@@ -15,6 +15,12 @@ export async function GET() {
 
 export async function POST(req: Request) {
   const { name } = await req.json();
+  const existingCategory = await prisma.category.findMany({
+    where: { name },
+  });
+  if (existingCategory) {
+    return NextResponse.json({ error: 'Category already exists.' }, { status: 400 });
+  }
   try {
     const newCategory = await prisma.category.create({
       data: { name },
