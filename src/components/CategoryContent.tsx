@@ -1,4 +1,4 @@
-import React, { JSX, useState } from "react";
+import React, { JSX, useEffect, useState } from "react";
 import { CiEdit } from "react-icons/ci";
 import {
   IoTrashOutline,
@@ -10,6 +10,7 @@ import ButtonWithIcon from "./ButtonWithIcon";
 import { IoMdAdd } from "react-icons/io";
 import AddEditCatSubCat from "./AddEditCatSubCat";
 import DeleteConfirmationModal from "./DeleteConfirmationModal";
+import CategoryStore from "@/stores/category";
 
 interface SubCategory {
   id: number;
@@ -22,35 +23,97 @@ interface Category {
   subCategories: SubCategory[];
 }
 
-const mockData: Category[] = [
-  {
-    id: 1,
-    name: "Category 1",
-    subCategories: [
-      { id: 11, name: "Sub 1.1" },
-      { id: 12, name: "Sub 1.2" },
-    ],
-  },
-  {
-    id: 2,
-    name: "Category 2",
-    subCategories: [
-      { id: 21, name: "Sub 2.1" },
-      { id: 22, name: "Sub 2.2" },
-    ],
-  },
-];
+// const mockData: Category[] = [
+//   {
+//     id: 1,
+//     name: "Category 1",
+//     subCategories: [
+//       { id: 11, name: "Sub 1.1" },
+//       { id: 12, name: "Sub 1.2" },
+//     ],
+//   },
+//   {
+//     id: 2,
+//     name: "Category 2",
+//     subCategories: [
+//       { id: 21, name: "Sub 2.1" },
+//       { id: 22, name: "Sub 2.2" },
+//     ],
+//   },
+// ];
 
 export default function CategoryContent(): JSX.Element {
   const [openCategories, setOpenCategories] = useState<number[]>([]);
   const [editMode, setEditMode] = useState(true);
   const [subMode, setSubMode] = useState(true);
-  const [selectedItem, setSelectedItem] = useState<{
-    id: string | number | null;
-    name: string | null;
-  }>({ id: null, name: "" });
+  const [selectedItemCategory, setSelectedItemCategory] = useState<{
+    categoryId: string | number | null;
+    categoryName: string | null;
+  }>({ categoryId: null, categoryName: "" });
+  const [selectedItemSubCategory, setSelectedItemSubCategory] = useState<{
+    categoryId: string | number | null;
+    subCategoryId: string | number | null;
+    subCategoryName: string | null;
+  }>({ categoryId: null, subCategoryId: null, subCategoryName: "" });
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showAddEditModal, setShowAddEditModal] = useState(false);
+
+  const {
+    // Categories
+    dataCategories,
+    loadingCategories,
+    errorCategories,
+    successCategories,
+
+    // Subcategories
+    dataSubcategories,
+    loadingSubcategories,
+    errorSubcategories,
+    successSubcategories,
+
+    // CRUD states for Categories
+    dataAddCategory,
+    loadingAddCategory,
+    errorAddCategory,
+    successAddCategory,
+
+    dataDeleteCategory,
+    loadingDeleteCategory,
+    errorDeleteCategory,
+    successDeleteCategory,
+
+    dataPatchCategory,
+    loadingPatchCategory,
+    errorPatchCategory,
+    successPatchCategory,
+
+    // CRUD states for Subcategories
+    dataAddSubcategory,
+    loadingAddSubcategory,
+    errorAddSubcategory,
+    successAddSubcategory,
+
+    dataDeleteSubcategory,
+    loadingDeleteSubcategory,
+    errorDeleteSubcategory,
+    successDeleteSubcategory,
+
+    dataPatchSubcategory,
+    loadingPatchSubcategory,
+    errorPatchSubcategory,
+    successPatchSubcategory,
+
+    // Methods
+    fetchCategories,
+    fetchSubcategories,
+    addCategory,
+    deleteCategory,
+    patchCategory,
+    addSubcategory,
+    deleteSubcategory,
+    patchSubcategory,
+  } = CategoryStore();
+
   const toggleCategory = (id: number) => {
     setOpenCategories((prev) =>
       prev.includes(id) ? prev.filter((catId) => catId !== id) : [...prev, id]
@@ -60,22 +123,66 @@ export default function CategoryContent(): JSX.Element {
   const handleEditCategory = (categoryId: number | string, name: string) => {
     setEditMode(true);
     setSubMode(false);
-    setSelectedItem({ id: categoryId, name: name });
+    setSelectedItemCategory({
+      categoryId: categoryId,
+      categoryName: name,
+    });
+    // setSelectedItem({ id: categoryId, name: name });
     setShowAddEditModal(true);
   };
 
   const handleEditSub = (subId: number | number | null, name: string) => {
     setEditMode(true);
     setSubMode(true);
-    setSelectedItem({ id: subId, name: name });
+    const categoryId =
+      dataSubcategories.find((sub: { id: number | null }) => sub.id === subId)
+        ?.Category.id || null;
+    setSelectedItemSubCategory({
+      categoryId,
+      subCategoryId: subId,
+      subCategoryName: name,
+    });
+
     setShowAddEditModal(true);
   };
 
   const handleDeleteSub = (subId: number | string | null, name: string) => {
     setSubMode(true);
-    setSelectedItem({ id: subId, name: name });
+    setSelectedItemSubCategory({
+      categoryId: null,
+      subCategoryId: subId,
+      subCategoryName: name,
+    });
+    // setSelectedItem({ id: subId, name: name });
     setShowDeleteModal(true);
   };
+
+  const fetchData: () => void = () => {
+    fetchCategories("/categories"); // Replace with your real endpoint
+    fetchSubcategories("/subcategories/"); // Replace with your real endpoint
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const groupedData: Category[] = dataCategories.map((category: any) => {
+    const subCategories = dataSubcategories
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      .filter((sub: any) => sub.Category.id === category.id)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      .map((sub: any) => ({
+        id: sub.id,
+        name: sub.name,
+      }));
+
+    return {
+      id: category.id,
+      name: category.name,
+      subCategories,
+    };
+  });
 
   // Columns typed according to your IColumnType pattern
   const subCategoryColumns: IColumnType<SubCategory>[] = [
@@ -122,22 +229,60 @@ export default function CategoryContent(): JSX.Element {
   const handleAddSubCategory = (categoryId: number) => {
     setEditMode(false);
     setSubMode(true);
-    setSelectedItem({ id: categoryId, name: "" });
+
+    setSelectedItemSubCategory({
+      categoryId: categoryId,
+      subCategoryId: null,
+      subCategoryName: "",
+    });
     setShowAddEditModal(true);
   };
 
   const handleDeleteCategory = (categoryId: number, name: string) => () => {
     setEditMode(false);
     setSubMode(false);
-    setSelectedItem({ id: categoryId, name: name });
+    setSelectedItemCategory({
+      categoryId: categoryId,
+      categoryName: name,
+    });
     setShowDeleteModal(true);
   };
 
   const handleAddCategory = () => {
     setEditMode(false);
     setSubMode(false);
-    setSelectedItem({ id: null, name: "" });
+    setSelectedItemCategory({
+      categoryId: null,
+      categoryName: "",
+    });
     setShowAddEditModal(true);
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, [
+    successAddCategory,
+    successDeleteCategory,
+    successPatchCategory,
+    successAddSubcategory,
+    successDeleteSubcategory,
+    successPatchSubcategory,
+  ]);
+
+  const handleModalClose: () => void = () => {
+    setShowDeleteModal(false);
+    setShowAddEditModal(false);
+    setSelectedItemCategory({
+      categoryId: null,
+      categoryName: "",
+    });
+    setSelectedItemSubCategory({
+      categoryId: null,
+      subCategoryId: null,
+      subCategoryName: "",
+    });
+    setEditMode(false);
+    setSubMode(false);
   };
 
   return (
@@ -153,7 +298,7 @@ export default function CategoryContent(): JSX.Element {
           onClick={() => handleAddCategory()}
         />
       </div>
-      {mockData.map((category) => (
+      {groupedData?.map((category) => (
         <div
           key={category.id}
           className="border flex flex-col justify-start bg-white items-center w-full border-gray-300 rounded-lg"
@@ -209,7 +354,7 @@ export default function CategoryContent(): JSX.Element {
         </div>
       ))}
 
-      {mockData.length === 0 && (
+      {groupedData?.length === 0 && (
         <div className="flex justify-center items-center h-40">
           <p className="text-gray-500 text-lg">No categories available.</p>
         </div>
@@ -217,23 +362,17 @@ export default function CategoryContent(): JSX.Element {
 
       <DeleteConfirmationModal
         isOpen={showDeleteModal}
-        onClose={() => {
-          setSelectedItem({ id: null, name: "" });
-          setShowDeleteModal(false);
-        }}
+        onClose={handleModalClose}
         isSubCategory={subMode}
-        name={selectedItem?.name}
+        selectedItem={!subMode ? selectedItemCategory : selectedItemSubCategory}
       />
 
       <AddEditCatSubCat
         isOpen={showAddEditModal}
-        onClose={() => {
-          setSelectedItem({ id: null, name: "" });
-          setShowAddEditModal(false);
-        }}
+        onClose={handleModalClose}
         isEdit={editMode}
         isSubCategory={subMode}
-        selectedItem={selectedItem}
+        selectedItem={!subMode ? selectedItemCategory : selectedItemSubCategory}
       />
     </div>
   );

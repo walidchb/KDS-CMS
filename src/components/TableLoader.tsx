@@ -26,7 +26,7 @@ const TableLoader: React.FC = () => {
             </div>
           </div>
         </div>
-        <div className="min-w-full w-full whitespace-nowrap divide-gray-300 rounded-lg overflow-hidden">
+        {/* <div className="min-w-full w-full whitespace-nowrap divide-gray-300 rounded-lg overflow-hidden">
           <div className="border border-gray-300 animate-pulse">
             <div className="p-3">
               <div className="w-32 h-5 bg-gray-300 rounded-lg mb-1"></div>
@@ -49,7 +49,7 @@ const TableLoader: React.FC = () => {
               <div className="w-24 h-5 bg-gray-300 rounded-lg"></div>
             </div>
           </div>
-        </div>
+        </div> */}
       </div>
     </div>
   );

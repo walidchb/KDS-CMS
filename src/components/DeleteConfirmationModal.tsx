@@ -2,6 +2,7 @@ import React from "react";
 import Modal from "./Modal";
 import { TbCancel } from "react-icons/tb";
 import ButtonWithIcon from "./buttonWithIcon";
+import CategoryStore from "@/stores/category";
 
 interface DeleteConfirmationModalProps {
   isOpen: boolean;
@@ -9,7 +10,12 @@ interface DeleteConfirmationModalProps {
 
   isSubCategory?: boolean;
   isProduct?: boolean;
-  name?: string | null;
+  selectedItem: {
+    categoryId?: string | number | null;
+    subCategoryId?: string | number | null;
+    categoryName?: string | null;
+    subCategoryName?: string | null;
+  };
 }
 
 const DeleteConfirmationModal: React.FC<DeleteConfirmationModalProps> = ({
@@ -17,9 +23,77 @@ const DeleteConfirmationModal: React.FC<DeleteConfirmationModalProps> = ({
   onClose,
 
   isSubCategory = false,
-  name,
+  selectedItem,
   isProduct = false,
 }) => {
+  const {
+    // Categories
+    dataCategories,
+    loadingCategories,
+    errorCategories,
+    successCategories,
+
+    // Subcategories
+    dataSubcategories,
+    loadingSubcategories,
+    errorSubcategories,
+    successSubcategories,
+
+    // CRUD states for Categories
+    dataAddCategory,
+    loadingAddCategory,
+    errorAddCategory,
+    successAddCategory,
+
+    dataDeleteCategory,
+    loadingDeleteCategory,
+    errorDeleteCategory,
+    successDeleteCategory,
+
+    dataPatchCategory,
+    loadingPatchCategory,
+    errorPatchCategory,
+    successPatchCategory,
+
+    // CRUD states for Subcategories
+    dataAddSubcategory,
+    loadingAddSubcategory,
+    errorAddSubcategory,
+    successAddSubcategory,
+
+    dataDeleteSubcategory,
+    loadingDeleteSubcategory,
+    errorDeleteSubcategory,
+    successDeleteSubcategory,
+
+    dataPatchSubcategory,
+    loadingPatchSubcategory,
+    errorPatchSubcategory,
+    successPatchSubcategory,
+
+    // Methods
+    fetchCategories,
+    fetchSubcategories,
+    addCategory,
+    deleteCategory,
+    patchCategory,
+    addSubcategory,
+    deleteSubcategory,
+    patchSubcategory,
+  } = CategoryStore();
+
+  const handleDelete: () => void = () => {
+    // Handle the delete action here
+    if (isSubCategory) {
+      // handle delete sub catefory
+      deleteSubcategory(`/subcategories/${selectedItem.subCategoryId}/`);
+    } else {
+      // handle delete category
+      deleteCategory(`/categories/${selectedItem.categoryId}/`);
+    }
+    onClose();
+  };
+
   if (!isOpen) return null;
 
   return (
@@ -39,14 +113,19 @@ const DeleteConfirmationModal: React.FC<DeleteConfirmationModalProps> = ({
             ? "la sous-catégorie : "
             : "la catégorie: "
         } `}{" "}
-        <span className="font-semibold">{name}</span> {`?`}
+        <span className="font-semibold">
+          {isSubCategory
+            ? selectedItem.subCategoryName
+            : selectedItem.categoryName}
+        </span>{" "}
+        {`?`}
       </p>
 
       <div className="flex justify-end space-x-2">
         <ButtonWithIcon
           label="Oui, Confirmer"
           className="bg-white text-red-700 h-10"
-          onClick={() => {}}
+          onClick={handleDelete}
         />
         <ButtonWithIcon
           label="Retour"

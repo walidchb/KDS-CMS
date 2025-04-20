@@ -1,6 +1,6 @@
 import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
 
-const BASE_URL = "https://admin-dev-backend.ghk49.net/api/";
+const BASE_URL = "/api";
 // const BASE_URL = "https://admin-backend.ghk49.net/api/";
 
 // const BASE_URL = process.env.NEXT_PUBLIC_URL_BACKEND;

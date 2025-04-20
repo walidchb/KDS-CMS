@@ -1,7 +1,10 @@
-import React from "react";
+import React, { useEffect } from "react";
 import Modal from "./Modal";
 import { IoMdClose } from "react-icons/io";
 import ProductsStore from "@/stores/products";
+// import { useRouter } from "next/navigation";
+import TableLoader from "./TableLoader";
+import { IColumnType, Table } from "./Table";
 
 interface Props {
   isOpen: boolean;
@@ -15,6 +18,11 @@ export default function ViewProductModal({ isOpen, product, onClose }: Props) {
     // errorGetProducts,
     // loadingProducts,
     productDetails,
+    dynamictable,
+    loadingDynamicTable,
+    // errorDynamicTable,
+    // successDynamicTable,
+    fetchDataDynamicTable,
     // errorGetProductDetails,
     // loadingProductDetails,
     // dataPatchProduct,
@@ -30,11 +38,72 @@ export default function ViewProductModal({ isOpen, product, onClose }: Props) {
     // errorAddProduct,
     // successAddProduct,
     // fetchDataProducts,
-    // fetchDataProductDetails,
+    fetchDataProductDetails,
+    resetProductDetails,
+    resetDynamicTable,
     // patchProduct,
     // deleteProduct,
     // addProduct,
   } = ProductsStore();
+
+  useEffect(() => {
+    // Fetch product details and dynamic table data when the modal opens
+    // and the product ID is available
+    if (isOpen && product) {
+      fetchDataProductDetails(`/products/${product}/`);
+      fetchDataDynamicTable(`/products/${product}/dynamic`);
+    }
+    // Cleanup function to reset product details and dynamic table data
+    return () => {
+      resetProductDetails();
+      resetDynamicTable();
+    };
+  }, [isOpen, product, fetchDataProductDetails, fetchDataDynamicTable]);
+  //   if (product) {
+  //     console.log("prod", product);
+  //     fetchDataProductDetails(`/products/${product}/`);
+  //     fetchDataDynamicTable(`/products/${product}/dynamic`);
+  //   }
+  // }, []);
+
+  const transformData = (data: Record<string, string[]>) => {
+    const keys = Object.keys(data);
+    const length = data[keys[0]]?.length;
+
+    const result = Array.from({ length }).map((_, index) => {
+      const row: Record<string, string> = {};
+      keys.forEach((key) => {
+        row[key] = data[key][index];
+      });
+      return row;
+    });
+
+    return result;
+  };
+
+  const transformedData = transformData(dynamictable);
+
+  const generateColumns = (
+    data: Record<string, string[]>
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ): IColumnType<any>[] => {
+    return Object.keys(data).map((key) => ({
+      key,
+      title: key.charAt(0).toUpperCase() + key.slice(1),
+      renderTitle: () => (
+        <span className="text-center">
+          {key.charAt(0).toUpperCase() + key.slice(1)}
+        </span>
+      ),
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      render: (_: any, row: any) => (
+        <span className="text-center">{row[key]}</span>
+      ),
+      width: 200,
+    }));
+  };
+
+  const dynamicColumns = generateColumns(dynamictable);
 
   if (!isOpen || !product) return null;
 
@@ -59,14 +128,37 @@ export default function ViewProductModal({ isOpen, product, onClose }: Props) {
           </div>
         </div>
 
+        <div className="flex space-x-2 justify-between items-center">
+          <div className="w-1/2">
+            <label className="block font-medium mb-1">Category</label>
+            <div className="border border-gray-300 p-2 rounded bg-gray-50">
+              {productDetails?.Category?.name}
+            </div>
+          </div>
+          <div className="w-1/2">
+            <label className="block font-medium mb-1">Sub categpry</label>
+            <div className="border border-gray-300 p-2 rounded bg-gray-50">
+              {productDetails?.SubCategory?.name}
+            </div>
+          </div>
+        </div>
+
         {/* Bullets */}
         <div>
           <label className="block font-medium mb-1">Des tirets</label>
-          <ul className="list-disc pl-5 space-y-1">
-            {productDetails?.bullets?.map((bullet: string, i: number) => (
-              <li key={i}>{bullet}</li>
-            ))}
-          </ul>
+          {productDetails?.ListDescription?.length !== 0 ? (
+            <ul className="px-[30px] border border-gray-300 py-2 rounded bg-gray-50 list-disc  space-y-1">
+              {productDetails?.ListDescription?.map(
+                (bullet: string, i: number) => (
+                  <li key={i}>{bullet}</li>
+                )
+              )}
+            </ul>
+          ) : (
+            <div className="px-[10px] border border-gray-300 py-2 rounded bg-gray-50 ">
+              no data found
+            </div>
+          )}
         </div>
 
         {/* Description */}
@@ -78,7 +170,7 @@ export default function ViewProductModal({ isOpen, product, onClose }: Props) {
         </div>
 
         {/* Images */}
-        {productDetails?.images && productDetails?.images.length > 0 && (
+        {productDetails?.images && productDetails?.images?.length > 0 && (
           <div>
             <label className="block font-medium mb-1">Images</label>
             <div className="flex flex-wrap gap-4">
@@ -101,38 +193,22 @@ export default function ViewProductModal({ isOpen, product, onClose }: Props) {
         )}
 
         {/* Table */}
-        <div>
-          <label className="block font-medium mb-2">Table</label>
-          <div className="overflow-auto">
-            <table className="min-w-full border border-gray-300 text-center">
-              <tbody>
-                {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                {productDetails?.table?.map((row: any[], rowIndex: number) => (
-                  <tr key={rowIndex}>
-                    {row.map((cell, colIndex: number) => (
-                      <td
-                        key={colIndex}
-                        className="border border-gray-300 px-3 py-2 bg-gray-50"
-                      >
-                        {cell}
-                      </td>
-                    ))}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
+
+        {loadingDynamicTable ? (
+          <TableLoader />
+        ) : (
+          <Table data={transformedData} columns={dynamicColumns} />
+        )}
 
         {/* Close Button */}
-        <div className="flex justify-end mt-6">
+        {/* <div className="flex justify-end mt-6">
           <button
             onClick={onClose}
             className="px-4 py-2 border border-gray-300 rounded"
           >
             Close
           </button>
-        </div>
+        </div> */}
       </div>
     </Modal>
   );

@@ -3,14 +3,18 @@ import Modal from "./Modal";
 import { TbEdit } from "react-icons/tb";
 import ButtonWithIcon from "./buttonWithIcon";
 
+import CategoryStore from "@/stores/category";
+
 interface AddEditCategoryModalProps {
   isOpen: boolean;
   onClose: () => void;
   isEdit: boolean;
   isSubCategory: boolean;
   selectedItem: {
-    id: string | number | null;
-    name: string | null;
+    categoryId?: string | number | null;
+    subCategoryId?: string | number | null;
+    categoryName?: string | null;
+    subCategoryName?: string | null;
   };
 }
 
@@ -21,16 +25,103 @@ const AddEditCategoryModal: React.FC<AddEditCategoryModalProps> = ({
   isSubCategory,
   selectedItem,
 }) => {
-  const [name, setName] = useState(selectedItem?.name || "");
+  const {
+    // Categories
+    dataCategories,
+    loadingCategories,
+    errorCategories,
+    successCategories,
+
+    // Subcategories
+    dataSubcategories,
+    loadingSubcategories,
+    errorSubcategories,
+    successSubcategories,
+
+    // CRUD states for Categories
+    dataAddCategory,
+    loadingAddCategory,
+    errorAddCategory,
+    successAddCategory,
+
+    dataDeleteCategory,
+    loadingDeleteCategory,
+    errorDeleteCategory,
+    successDeleteCategory,
+
+    dataPatchCategory,
+    loadingPatchCategory,
+    errorPatchCategory,
+    successPatchCategory,
+
+    // CRUD states for Subcategories
+    dataAddSubcategory,
+    loadingAddSubcategory,
+    errorAddSubcategory,
+    successAddSubcategory,
+
+    dataDeleteSubcategory,
+    loadingDeleteSubcategory,
+    errorDeleteSubcategory,
+    successDeleteSubcategory,
+
+    dataPatchSubcategory,
+    loadingPatchSubcategory,
+    errorPatchSubcategory,
+    successPatchSubcategory,
+
+    // Methods
+    fetchCategories,
+    fetchSubcategories,
+    addCategory,
+    deleteCategory,
+    patchCategory,
+    addSubcategory,
+    deleteSubcategory,
+    patchSubcategory,
+  } = CategoryStore();
+  const [name, setName] = useState(
+    isSubCategory
+      ? selectedItem?.subCategoryName
+      : selectedItem?.categoryName || ""
+  );
 
   const handleSubmit = () => {
-    console.log(name);
+    if (isSubCategory) {
+      if (isEdit) {
+        // Logic to edit the subcategory
+        patchSubcategory(`/subcategories/${selectedItem?.subCategoryId}/`, {
+          name,
+          categoryId: selectedItem?.categoryId,
+        });
+      } else {
+        addSubcategory(`/subcategories/`, {
+          name,
+          categoryId: selectedItem?.categoryId,
+        });
+      }
+    } else {
+      if (isEdit) {
+        // Logic to edit the category or subcategory
+        patchCategory(`/categories/${selectedItem?.categoryId}/`, {
+          name,
+        });
+      } else {
+        addCategory(`/categories`, {
+          name,
+        });
+      }
+    }
     onClose();
   };
 
   // Reset name when modal closes or opens
   React.useEffect(() => {
-    setName(selectedItem?.name || "");
+    setName(
+      isSubCategory
+        ? selectedItem?.subCategoryName
+        : selectedItem?.categoryName || ""
+    );
   }, [selectedItem, isOpen]);
 
   if (!isOpen) return null;

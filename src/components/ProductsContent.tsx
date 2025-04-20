@@ -1,4 +1,4 @@
-import React, { JSX, useState } from "react";
+import React, { JSX, useEffect, useState } from "react";
 import { CiEdit } from "react-icons/ci";
 import { IoTrashOutline } from "react-icons/io5";
 import { FaRegEye } from "react-icons/fa";
@@ -10,39 +10,28 @@ import DeleteConfirmationModal from "./DeleteConfirmationModal";
 import ViewProductModal from "./ProductDetails";
 // import AddEditProductModal from "./AddEditCatSubCat"; // You need to create this
 import AddEditProductModal from "./AddEditProduct";
+import ProductsStore from "@/stores/products";
+import TableLoader from "./TableLoader";
+import Dropdown from "./DropDown";
+import { useRouter, useSearchParams } from "next/navigation";
 
 interface Product {
-  id: number;
+  id: string;
   name: string;
-  category: string;
-  subCategory: string;
+  description: string;
+  image: string;
+  ListDescription: string[];
+  Category: {
+    id: string;
+    name: string;
+  };
+  SubCategory: {
+    id: string;
+    name: string;
+  };
 }
 
-// interface ProductProps {
-//   id?: number;
-//   name: string;
-//   bullets: string[];
-//   description: string;
-//   table: string[][];
-// }
-
-const mockProducts: Product[] = [
-  {
-    id: 1,
-    name: "Product 1",
-    category: "Category A",
-    subCategory: "Sub A1",
-  },
-  {
-    id: 2,
-    name: "Product 2",
-    category: "Category B",
-    subCategory: "Sub B1",
-  },
-];
-
 export default function ProductsContent(): JSX.Element {
-  const [products, setProducts] = useState<Product[]>(mockProducts);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedProductToDelete, setselectedProductToDelete] = useState<{
     id: string | number | null;
@@ -54,20 +43,129 @@ export default function ProductsContent(): JSX.Element {
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [addEditModal, setAddEditModal] = useState(false);
   const [editMode, setEditMode] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [selectedSubCategory, setSelectedSubCategory] = useState<string | null>(
+    null
+  );
 
-  const handleDeleteClick = (id: number, name: string) => {
+  const {
+    fetchDataCategories,
+    dataCategories,
+    loadingCategories,
+    errorGetCategories,
+    fetchDataSubcategories,
+    dataSubcategories,
+    loadingSubcategories,
+    errorGetSubcategories,
+    Dataproducts,
+    errorGetProducts,
+    loadingProducts,
+    productDetails,
+    errorGetProductDetails,
+    loadingProductDetails,
+    dataPatchProduct,
+    loadingPatch,
+    errorPatch,
+    successPatch,
+    dataDeleteProduct,
+    loadingDelete,
+    errorDelete,
+    successDelete,
+    dataAddProduct,
+    loadingAddProduct,
+    errorAddProduct,
+    successAddProduct,
+    fetchDataProducts,
+    fetchDataProductDetails,
+    patchProduct,
+    deleteProduct,
+    addProduct,
+  } = ProductsStore();
+
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  const updateQueryParams = (key: string, value: string | null) => {
+    const params = new URLSearchParams(searchParams.toString());
+
+    if (value) {
+      params.set(key, value);
+    } else {
+      params.delete(key);
+    }
+
+    router.push(`?${params.toString()}`);
+  };
+
+  const handleCategoryChange = (value: string | null) => {
+    const categoryId = dataCategories?.data.find(
+      (category: { name: string }) => category.name === value
+    )?.id;
+    setSelectedCategory(categoryId);
+    updateQueryParams("category", categoryId);
+  };
+
+  const handleSubCategoryChange = (value: string | null) => {
+    const subCategoryId = dataSubcategories.find(
+      (subcategory: { name: string }) => subcategory.name === value
+    )?.id;
+    setSelectedSubCategory(subCategoryId);
+    updateQueryParams("subCategory", subCategoryId);
+  };
+
+  const handlePageChange = (page: number) => {
+    updateQueryParams("page", page.toString());
+  };
+
+  useEffect(() => {
+    const pageParam = searchParams.get("page");
+    const categoryParam = searchParams.get("category");
+    const subCategoryParam = searchParams.get("subCategory");
+
+    setSelectedCategory(categoryParam || null);
+    setSelectedSubCategory(subCategoryParam || null);
+
+    const page = pageParam ? parseInt(pageParam) : 1;
+
+    const query = `/products/pagination?page=${page}${
+      categoryParam ? `&categoryId=${categoryParam}` : ""
+    }${subCategoryParam ? `&subCategoryId=${subCategoryParam}` : ""}`;
+
+    fetchDataProducts(query);
+  }, [searchParams]);
+  // useEffect(() => {
+  //   console.log(selectedItem);
+  // }, [selectedItem]);
+
+  useEffect(() => {
+    // const categoryParam = searchParams.get("category");
+
+    fetchDataCategories("/categories/pagination");
+
+    // fetchDataSubcategories("/subcategories/pagination");
+    fetchDataProducts(`/products/pagination?page=1&limit=20`);
+  }, [router]);
+
+  useEffect(() => {
+    if (selectedCategory) {
+      fetchDataSubcategories(`/subcategories/${selectedCategory}/category`);
+    }
+  }, [selectedCategory]);
+
+  // useEffect(() => {
+  //   console.log("data prdycsdk");
+  //   console.log(Dataproducts.data);
+  // }, [Dataproducts]);
+
+  const handleDeleteClick = (id: number | string, name: string) => {
     setselectedProductToDelete({ id: id, name: name });
     setShowDeleteModal(true);
   };
 
   const handleViewClick = (product: Product) => {
+    // fetchDataProductDetails(`/products/${product.id}/dynamic`);
     setSelectedProductId(product.id);
     setIsDetailsModalOpen(true);
-  };
-
-  const handleDelete = () => {
-    setProducts((prev) => prev.filter((p) => p.id !== selectedProductId));
-    setShowDeleteModal(false);
   };
 
   const handleEditClick = (product: Product) => {
@@ -83,19 +181,6 @@ export default function ProductsContent(): JSX.Element {
     setAddEditModal(true);
   };
 
-  // const handleSave = (newProduct: Product) => {
-  //   if (editMode) {
-  //     setProducts((prev) =>
-  //       prev.map((p) => (p.id === newProduct.id ? newProduct : p))
-  //     );
-  //   } else {
-  //     setProducts((prev) => [
-  //       ...prev,
-  //       { ...newProduct, id: Date.now() }, // Temporary ID
-  //     ]);
-  //   }
-  // };
-
   const productColumns: IColumnType<Product>[] = [
     {
       key: "name",
@@ -109,8 +194,8 @@ export default function ProductsContent(): JSX.Element {
       title: "Catégorie",
       renderTitle: () => <span className="text-center">Catégorie</span>,
       width: 200,
-      render: (_, { category }) => (
-        <span className="text-center">{category}</span>
+      render: (_, { Category }) => (
+        <span className="text-center">{Category.name}</span>
       ),
     },
     {
@@ -118,8 +203,8 @@ export default function ProductsContent(): JSX.Element {
       title: "Sous-catégorie",
       renderTitle: () => <span className="text-center">Sous-catégorie</span>,
       width: 200,
-      render: (_, { subCategory }) => (
-        <span className="text-center">{subCategory}</span>
+      render: (_, { SubCategory }) => (
+        <span className="text-center">{SubCategory.name}</span>
       ),
     },
     {
@@ -154,22 +239,51 @@ export default function ProductsContent(): JSX.Element {
     },
   ];
 
-  // const handleSaveProduct = (newProduct: Product) => {
-  //   if (editMode) {
-  //     // Update product
-  //     setProducts((prev) =>
-  //       prev.map((p) => (p.id === newProduct.id ? newProduct : p))
-  //     );
-  //   } else {
-  //     // Add product
-  //     setProducts((prev) => [...prev, { ...newProduct, id: Date.now() }]);
-  //   }
-  // };
+  const handleClear = () => {
+    console.log("Selection cleared!");
+  };
 
   return (
     <div className="space-y-4 p-10 text-black">
-      <div className="flex justify-between items-center mb-10 w-full">
+      <div className="flex  flex-wrap justify-between items-center mb-10 w-full">
         <h3 className="text-4xl font-semibold text-red-700">Products</h3>
+        <div className="flex justify-center space-x-2 items-center flex-wrap">
+          <Dropdown
+            className="min-w-[300px]  w-full sm:w-[48%] lg:w-[30%]"
+            placeholder={"Category"}
+            items={
+              dataCategories?.data?.map(
+                (category: { name: string }) => category.name
+              ) || []
+            }
+            value={
+              dataCategories?.data?.find(
+                (category: { id: string }) => category.id === selectedCategory
+              )?.name
+            }
+            setValue={handleCategoryChange}
+            onClear={handleClear}
+          />
+          {dataSubcategories?.length != 0 ? (
+            <Dropdown
+              className="min-w-[300px]  w-full sm:w-[48%] lg:w-[30%]"
+              placeholder={"sous-catégorie"}
+              items={
+                dataSubcategories?.map(
+                  (subcategory: { name: string }) => subcategory.name
+                ) || []
+              }
+              value={
+                dataSubcategories?.find(
+                  (subcategory: { id: string }) =>
+                    subcategory.id === selectedSubCategory
+                )?.name
+              }
+              setValue={handleSubCategoryChange}
+              onClear={handleClear}
+            />
+          ) : null}
+        </div>
         <ButtonWithIcon
           className="bg-green-600 px-3 h-10 text-white"
           label="Add Product"
@@ -178,9 +292,13 @@ export default function ProductsContent(): JSX.Element {
         />
       </div>
 
-      <Table data={products} columns={productColumns} />
+      {loadingProducts ? (
+        <TableLoader />
+      ) : (
+        <Table data={Dataproducts?.data} columns={productColumns} />
+      )}
 
-      {products.length === 0 && (
+      {Dataproducts?.data?.length === 0 && (
         <div className="flex justify-center items-center h-40">
           <p className="text-gray-500 text-lg">No products available.</p>
         </div>
@@ -189,7 +307,6 @@ export default function ProductsContent(): JSX.Element {
       <DeleteConfirmationModal
         isOpen={showDeleteModal}
         onClose={() => setShowDeleteModal(false)}
-        onConfirm={handleDelete}
         isSubCategory={false}
         isProduct={true}
         name={selectedProductToDelete?.name}
