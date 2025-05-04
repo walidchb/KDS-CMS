@@ -3,13 +3,12 @@ import { prisma } from '@/lib/prisma';
 import uploadImageToCloudinary from '@/utils/uploadImageToCloudinary';
 
 
-export async function GET(
-  req: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  
   try {
     const product = await prisma.product.findUnique({
-      where: { id: params.id },
+      where: { id},
       select: {
         id: true,
         name: true,
@@ -42,13 +41,11 @@ export async function GET(
   }
 }
 
-export async function PATCH(
-  req: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   const formData = await req.formData();
   const product = await prisma.product.findUnique({
-    where: { id: params.id },
+    where: { id },
   });
   const name = formData.get('name')?.toString() ?? product?.name;
   const description = formData.get('description')?.toString() ?? product?.description;
@@ -73,7 +70,7 @@ export async function PATCH(
   }
   try {
     const updated = await prisma.product.update({
-      where: { id: params.id },
+      where: { id:id },
       data: {
         name,
         description,
@@ -84,11 +81,11 @@ export async function PATCH(
     if (listDescription && listDescription != '[]') {
       if (listDescription.length > 0) {
         await prisma.listDescription.deleteMany({
-          where: { productId: params.id },
+          where: { productId:id },
         });
         await prisma.listDescription.createMany({
           data: listDescription.map((desc: string) => ({
-            productId: params.id,
+            productId:id,
             description: desc,
           })),
         });
@@ -96,11 +93,11 @@ export async function PATCH(
     }
     if (fields && fields != '[]') {
       await prisma.dynamicProduct.delete({
-        where: { productId: params.id },
+        where: { productId:id },
       });
       await prisma.dynamicProduct.create({
         data: {
-          productId: params.id,
+          productId:id,
           fields: fields,
         },
       });
@@ -108,7 +105,7 @@ export async function PATCH(
     if (files.length > 0) {
   
       await prisma.imageProduct.deleteMany({
-        where: { productId: params.id },
+        where: { productId:id },
       });
 
       for (const file of files) {
@@ -119,7 +116,7 @@ export async function PATCH(
         const imageUrl = await uploadImageToCloudinary(buffer);
         await prisma.imageProduct.createMany({
           data: {
-            productId: params.id,
+            productId:id,
             image: imageUrl,
           },
         });
@@ -134,27 +131,25 @@ export async function PATCH(
   }
 }
 
-export async function DELETE(
-  req: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   try {
     // Delete related data first to avoid FK constraint errors
     await prisma.dynamicProduct.deleteMany({
-      where: { productId: params.id },
+      where: { productId:id },
     });
 
     await prisma.imageProduct.deleteMany({
-      where: { productId: params.id },
+      where: { productId:id },
     });
 
     await prisma.listDescription.deleteMany({
-      where: { productId: params.id },
+      where: { productId:id },
     });
 
     // Now delete the product
     await prisma.product.delete({
-      where: { id: params.id },
+      where: { id:id },
     });
 
     return NextResponse.json({ message: 'Deleted successfully' });

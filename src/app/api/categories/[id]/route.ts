@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '../../../../lib/prisma';
 
-export async function GET(_: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   try {
     const category = await prisma.category.findUnique({
-      where: { id: params.id },
+      where: { id },
     });
 
     if (!category) {
@@ -18,7 +19,8 @@ export async function GET(_: NextRequest, { params }: { params: { id: string } }
   }
 }
 
-export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   const { name } = await req.json();
 
   const existingCategory = await prisma.category.findMany({
@@ -30,7 +32,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
 
   try {
     const updated = await prisma.category.update({
-      where: { id: params.id },
+      where: { id },
       data: { name },
     });
 
@@ -41,10 +43,11 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
   }
 }
 
-export async function DELETE(_: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   try {
     await prisma.category.delete({
-      where: { id: params.id },
+      where: { id },
     });
     return NextResponse.json({ message: 'Deleted successfully' });
   } catch (err) {

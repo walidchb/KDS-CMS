@@ -1,13 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
-export async function GET(
-  req: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   try {
     const subcategory = await prisma.subCategory.findUnique({
-      where: { id: params.id },
+      where: { id },
       select: {
         id: true,
         name: true,
@@ -28,10 +26,8 @@ export async function GET(
   }
 }
 
-export async function PATCH(
-  req: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   const { name, categoryId } = await req.json();
 
   const existingSubCategory = await prisma.subCategory.findMany({
@@ -43,7 +39,7 @@ export async function PATCH(
 
   try {
     const updated = await prisma.subCategory.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         name,
         categoryId: categoryId ? String(categoryId) : undefined,
@@ -57,13 +53,11 @@ export async function PATCH(
   }
 }
 
-export async function DELETE(
-  req: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   try {
     await prisma.subCategory.delete({
-      where: { id: params.id },
+      where: { id },
     });
     return NextResponse.json({ message: 'Deleted successfully' });
   } catch (err) {
