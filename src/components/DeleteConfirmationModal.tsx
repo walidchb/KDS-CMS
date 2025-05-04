@@ -1,7 +1,7 @@
 import React from "react";
 import Modal from "./Modal";
 import { TbCancel } from "react-icons/tb";
-import ButtonWithIcon from "./buttonWithIcon";
+import ButtonWithIcon from "@/components/ButtonWithIcon";
 import CategoryStore from "@/stores/category";
 import ProductsStore from "@/stores/products"; // Ensure this is the correct path to ProductsStore
 
@@ -30,59 +30,13 @@ const DeleteConfirmationModal: React.FC<DeleteConfirmationModalProps> = ({
 }) => {
   const { deleteProduct, loadingDelete } = ProductsStore();
   const {
-    // Categories
-    dataCategories,
-    loadingCategories,
-    errorCategories,
-    successCategories,
-
-    // Subcategories
-    dataSubcategories,
-    loadingSubcategories,
-    errorSubcategories,
-    successSubcategories,
-
-    // CRUD states for Categories
-    dataAddCategory,
-    loadingAddCategory,
-    errorAddCategory,
-    successAddCategory,
-
-    dataDeleteCategory,
     loadingDeleteCategory,
-    errorDeleteCategory,
-    successDeleteCategory,
 
-    dataPatchCategory,
-    loadingPatchCategory,
-    errorPatchCategory,
-    successPatchCategory,
-
-    // CRUD states for Subcategories
-    dataAddSubcategory,
-    loadingAddSubcategory,
-    errorAddSubcategory,
-    successAddSubcategory,
-
-    dataDeleteSubcategory,
     loadingDeleteSubcategory,
-    errorDeleteSubcategory,
-    successDeleteSubcategory,
 
-    dataPatchSubcategory,
-    loadingPatchSubcategory,
-    errorPatchSubcategory,
-    successPatchSubcategory,
-
-    // Methods
-    fetchCategories,
-    fetchSubcategories,
-    addCategory,
     deleteCategory,
-    patchCategory,
-    addSubcategory,
+
     deleteSubcategory,
-    patchSubcategory,
   } = CategoryStore();
 
   const handleDelete: () => void = () => {

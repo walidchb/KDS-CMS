@@ -18,8 +18,7 @@ export default function ViewProductModal({ isOpen, product, onClose }: Props) {
     // errorGetProducts,
     // loadingProducts,
     productDetails,
-    dynamictable,
-    loadingDynamicTable,
+
     // errorDynamicTable,
     // successDynamicTable,
     fetchDataDynamicTable,
