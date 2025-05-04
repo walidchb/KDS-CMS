@@ -21,6 +21,13 @@ export async function GET(_: NextRequest, { params }: { params: { id: string } }
 export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
   const { name } = await req.json();
 
+  const existingCategory = await prisma.category.findMany({
+    where: { name },
+  });
+  if (existingCategory.length>0) {
+    return NextResponse.json({ error: 'Category name already exists' }, { status: 404 });
+  }
+
   try {
     const updated = await prisma.category.update({
       where: { id: params.id },

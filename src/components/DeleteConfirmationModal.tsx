@@ -3,14 +3,16 @@ import Modal from "./Modal";
 import { TbCancel } from "react-icons/tb";
 import ButtonWithIcon from "./buttonWithIcon";
 import CategoryStore from "@/stores/category";
+import ProductsStore from "@/stores/products"; // Ensure this is the correct path to ProductsStore
 
 interface DeleteConfirmationModalProps {
   isOpen: boolean;
   onClose: () => void;
-
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  product?: any;
   isSubCategory?: boolean;
   isProduct?: boolean;
-  selectedItem: {
+  selectedItem?: {
     categoryId?: string | number | null;
     subCategoryId?: string | number | null;
     categoryName?: string | null;
@@ -21,11 +23,12 @@ interface DeleteConfirmationModalProps {
 const DeleteConfirmationModal: React.FC<DeleteConfirmationModalProps> = ({
   isOpen,
   onClose,
-
+  product,
   isSubCategory = false,
   selectedItem,
   isProduct = false,
 }) => {
+  const { deleteProduct, loadingDelete } = ProductsStore();
   const {
     // Categories
     dataCategories,
@@ -86,12 +89,14 @@ const DeleteConfirmationModal: React.FC<DeleteConfirmationModalProps> = ({
     // Handle the delete action here
     if (isSubCategory) {
       // handle delete sub catefory
-      deleteSubcategory(`/subcategories/${selectedItem.subCategoryId}/`);
+      deleteSubcategory(`/subcategories/${selectedItem?.subCategoryId}/`);
+    } else if (isProduct) {
+      deleteProduct(`/products/${product?.id}/`);
     } else {
       // handle delete category
-      deleteCategory(`/categories/${selectedItem.categoryId}/`);
+      deleteCategory(`/categories/${selectedItem?.categoryId}/`);
     }
-    onClose();
+    // onClose();
   };
 
   if (!isOpen) return null;
@@ -115,16 +120,21 @@ const DeleteConfirmationModal: React.FC<DeleteConfirmationModalProps> = ({
         } `}{" "}
         <span className="font-semibold">
           {isSubCategory
-            ? selectedItem.subCategoryName
-            : selectedItem.categoryName}
+            ? selectedItem?.subCategoryName
+            : isProduct
+            ? product?.name
+            : selectedItem?.categoryName}
         </span>{" "}
         {`?`}
       </p>
 
       <div className="flex justify-end space-x-2">
         <ButtonWithIcon
+          loading={
+            loadingDeleteCategory || loadingDeleteSubcategory || loadingDelete
+          }
           label="Oui, Confirmer"
-          className="bg-white text-red-700 h-10"
+          className={`bg-white  text-red-700 h-10 mr-6`}
           onClick={handleDelete}
         />
         <ButtonWithIcon

@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import Modal from "./Modal";
 import { TbEdit } from "react-icons/tb";
-import ButtonWithIcon from "./buttonWithIcon";
+import ButtonWithIcon from "@/components/ButtonWithIcon";
 
 import CategoryStore from "@/stores/category";
 
@@ -26,58 +26,19 @@ const AddEditCategoryModal: React.FC<AddEditCategoryModalProps> = ({
   selectedItem,
 }) => {
   const {
-    // Categories
-    dataCategories,
-    loadingCategories,
-    errorCategories,
-    successCategories,
-
-    // Subcategories
-    dataSubcategories,
-    loadingSubcategories,
-    errorSubcategories,
-    successSubcategories,
-
-    // CRUD states for Categories
-    dataAddCategory,
     loadingAddCategory,
-    errorAddCategory,
-    successAddCategory,
 
-    dataDeleteCategory,
-    loadingDeleteCategory,
-    errorDeleteCategory,
-    successDeleteCategory,
-
-    dataPatchCategory,
     loadingPatchCategory,
-    errorPatchCategory,
-    successPatchCategory,
 
-    // CRUD states for Subcategories
-    dataAddSubcategory,
     loadingAddSubcategory,
-    errorAddSubcategory,
-    successAddSubcategory,
 
-    dataDeleteSubcategory,
-    loadingDeleteSubcategory,
-    errorDeleteSubcategory,
-    successDeleteSubcategory,
-
-    dataPatchSubcategory,
     loadingPatchSubcategory,
-    errorPatchSubcategory,
-    successPatchSubcategory,
 
-    // Methods
-    fetchCategories,
-    fetchSubcategories,
     addCategory,
-    deleteCategory,
+
     patchCategory,
     addSubcategory,
-    deleteSubcategory,
+
     patchSubcategory,
   } = CategoryStore();
   const [name, setName] = useState(
@@ -112,7 +73,7 @@ const AddEditCategoryModal: React.FC<AddEditCategoryModalProps> = ({
         });
       }
     }
-    onClose();
+    // onClose();
   };
 
   // Reset name when modal closes or opens
@@ -161,6 +122,12 @@ const AddEditCategoryModal: React.FC<AddEditCategoryModalProps> = ({
           onClick={onClose}
         />
         <ButtonWithIcon
+          loading={
+            loadingAddCategory ||
+            loadingPatchCategory ||
+            loadingAddSubcategory ||
+            loadingPatchSubcategory
+          }
           label={isEdit ? "Enregistrer" : "Ajouter"}
           className="bg-blue-700 text-white h-10 px-2"
           onClick={handleSubmit}

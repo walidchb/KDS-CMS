@@ -10,49 +10,54 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
+  url      = "postgresql://postgres.katgpbkwqumvemghttnv:9LoMQfdrAehgYWbk@aws-0-us-east-1.pooler.supabase.com:5432/postgres"
 }
 
 model Category {
-  id        String   @id @default(cuid())
-  name String 
+  id        String        @id @default(cuid())
+  name      String
   SubCegory SubCategory[]
-  Product Product[]
+  Product   Product[]
 }
 
-model SubCategory{
-  id        String   @id @default(cuid())
-  name String
+model SubCategory {
+  id         String    @id @default(cuid())
+  name       String
   categoryId String
-  Category Category @relation(fields: [categoryId], references: [id]) 
-  Product Product[]
+  Category   Category  @relation(fields: [categoryId], references: [id])
+  Product    Product[]
 }
 
 model Product {
-  id        String   @id @default(cuid())
-  name String
-  description String
-  image String
-  categoryId String
-  subCategoryId String
-  Category Category @relation(fields: [categoryId], references: [id])
-  SubCategory SubCategory @relation(fields: [subCategoryId], references: [id])
+  id              String            @id @default(cuid())
+  name            String
+  description     String
+  categoryId      String? // Made optional
+  subCategoryId   String? // Made optional
+  Category        Category?         @relation(fields: [categoryId], references: [id])
+  SubCategory     SubCategory?      @relation(fields: [subCategoryId], references: [id])
   ListDescription listDescription[]
-  DynamicProduct DynamicProduct[]
-
+  DynamicProduct  DynamicProduct[]
+  ImageProduct    ImageProduct[]
 }
 
 model listDescription {
-  id        String   @id @default(cuid())
+  id          String  @id @default(cuid())
   description String
-  productId String
-  Product Product @relation(fields: [productId], references: [id])
+  productId   String
+  Product     Product @relation(fields: [productId], references: [id])
 }
 
 model DynamicProduct {
-  id      Int      @id @default(autoincrement())
-  fields  Json
-  productId String @unique 
-  Product Product @relation(fields: [productId], references: [id])
+  id        Int     @id @default(autoincrement())
+  fields    Json
+  productId String  @unique
+  Product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
 }
 
+model ImageProduct {
+  id        String  @id @default(cuid())
+  image     String
+  productId String
+  Product   Product @relation(fields: [productId], references: [id])
+}

@@ -24,7 +24,7 @@ export default function ViewProductModal({ isOpen, product, onClose }: Props) {
     // successDynamicTable,
     fetchDataDynamicTable,
     // errorGetProductDetails,
-    // loadingProductDetails,
+    loadingProductDetails,
     // dataPatchProduct,
     // loadingPatch,
     // errorPatch,
@@ -51,7 +51,7 @@ export default function ViewProductModal({ isOpen, product, onClose }: Props) {
     // and the product ID is available
     if (isOpen && product) {
       fetchDataProductDetails(`/products/${product}/`);
-      fetchDataDynamicTable(`/products/${product}/dynamic`);
+      // fetchDataDynamicTable(`/products/${product}/dynamic`);
     }
     // Cleanup function to reset product details and dynamic table data
     return () => {
@@ -66,14 +66,17 @@ export default function ViewProductModal({ isOpen, product, onClose }: Props) {
   //   }
   // }, []);
 
-  const transformData = (data: Record<string, string[]>) => {
+  const transformData = (data: Record<string, string | string[]>) => {
     const keys = Object.keys(data);
-    const length = data[keys[0]]?.length;
+    const length = Array.isArray(data[keys[0]])
+      ? (data[keys[0]] as string[]).length
+      : 1;
 
     const result = Array.from({ length }).map((_, index) => {
       const row: Record<string, string> = {};
       keys.forEach((key) => {
-        row[key] = data[key][index];
+        const value = data[key];
+        row[key] = Array.isArray(value) ? value[index] : (value as string);
       });
       return row;
     });
@@ -81,7 +84,11 @@ export default function ViewProductModal({ isOpen, product, onClose }: Props) {
     return result;
   };
 
-  const transformedData = transformData(dynamictable);
+  // const transformedData = transformData(
+  //   productDetails?.DynamicProduct[0]
+  //     ? productDetails?.DynamicProduct[0]?.fields
+  //     : {}
+  // );
 
   const generateColumns = (
     data: Record<string, string[]>
@@ -103,9 +110,24 @@ export default function ViewProductModal({ isOpen, product, onClose }: Props) {
     }));
   };
 
-  const dynamicColumns = generateColumns(dynamictable);
+  // const dynamicColumns = generateColumns(
+  //   productDetails?.DynamicProduct[0]?.fields
+  //     ? productDetails?.DynamicProduct[0]?.fields
+  //     : {}
+  // );
 
   if (!isOpen || !product) return null;
+
+  if (loadingProductDetails)
+    return (
+      <Modal className="h-[80vh]" onClose={onClose}>
+        <div className="h-full flex justify-center flex-col items-center animate-pulse">
+          <div className="w-16 h-16 border-4 border-red-700 border-dashed rounded-full animate-spin"></div>
+
+          <p className="text-sm text-gray-400 mt-2">Loading, please wait...</p>
+        </div>
+      </Modal>
+    );
 
   return (
     <Modal onClose={onClose}>
@@ -147,15 +169,15 @@ export default function ViewProductModal({ isOpen, product, onClose }: Props) {
         <div>
           <label className="block font-medium mb-1">Des tirets</label>
           {productDetails?.ListDescription?.length !== 0 ? (
-            <ul className="px-[30px] border border-gray-300 py-2 rounded bg-gray-50 list-disc  space-y-1">
+            <ul className="px-[30px] border border-gray-300 py-2 rounded bg-gray-50 list-disc space-y-1">
               {productDetails?.ListDescription?.map(
-                (bullet: string, i: number) => (
-                  <li key={i}>{bullet}</li>
+                (bullet: { id: string; description: string }) => (
+                  <li key={bullet.id}>{bullet.description}</li>
                 )
               )}
             </ul>
           ) : (
-            <div className="px-[10px] border border-gray-300 py-2 rounded bg-gray-50 ">
+            <div className="px-[10px] border border-gray-300 py-2 rounded bg-gray-50">
               no data found
             </div>
           )}
@@ -170,7 +192,7 @@ export default function ViewProductModal({ isOpen, product, onClose }: Props) {
         </div>
 
         {/* Images */}
-        {productDetails?.images && productDetails?.images?.length > 0 && (
+        {/* {productDetails?.images && productDetails?.images?.length > 0 && (
           <div>
             <label className="block font-medium mb-1">Images</label>
             <div className="flex flex-wrap gap-4">
@@ -190,15 +212,18 @@ export default function ViewProductModal({ isOpen, product, onClose }: Props) {
               )}
             </div>
           </div>
-        )}
+        )} */}
 
         {/* Table */}
 
-        {loadingDynamicTable ? (
+        {loadingProductDetails ? (
           <TableLoader />
-        ) : (
-          <Table data={transformedData} columns={dynamicColumns} />
-        )}
+        ) : productDetails?.DynamicProduct?.length !== 0 ? (
+          <Table
+            data={transformData(productDetails?.DynamicProduct[0]?.fields)}
+            columns={generateColumns(productDetails?.DynamicProduct[0]?.fields)}
+          />
+        ) : null}
 
         {/* Close Button */}
         {/* <div className="flex justify-end mt-6">

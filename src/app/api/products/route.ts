@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import uploadImageToCloudinary from '@/utils/uploadImageToCloudinary';
 
+// GET products
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const name = searchParams.get('name');
@@ -22,10 +23,11 @@ export async function GET(req: NextRequest) {
         id: true,
         name: true,
         description: true,
-        image: true,
         ListDescription: { select: { description: true } },
         Category: { select: { id: true, name: true } },
         SubCategory: { select: { id: true, name: true } },
+        DynamicProduct: { select: { fields: true } },
+        ImageProduct: { select: { image: true } },
       },
     });
 
@@ -36,52 +38,57 @@ export async function GET(req: NextRequest) {
   }
 }
 
+// POST create product
 export async function POST(req: NextRequest) {
   const formData = await req.formData();
 
   const name = formData.get('name')?.toString() ?? '';
   const description = formData.get('description')?.toString() ?? '';
-  const categoryId = formData.get('categoryId')?.toString() ?? '';
-  const subCategoryId = formData.get('subCategoryId')?.toString() ?? '';
-  const listDescription = JSON.parse(formData.get('listDescription')?.toString() ?? '[]');
-  const fields = JSON.parse(formData.get('fields')?.toString() ?? '[]');
-  const file = formData.get('image') as File;
-
-  if (!file || !file.size) {
-    return NextResponse.json({ error: 'No file uploaded' }, { status: 400 });
-  }
-
-  const buffer = Buffer.from(await file.arrayBuffer());
-  const imageUrl = await uploadImageToCloudinary(buffer);
-
-  const category = await prisma.category.findUnique({ where: { id: categoryId } });
-  const subcategory = await prisma.subCategory.findUnique({
-    where: { id: subCategoryId },
-  });
-
-  if (!category || !subcategory) {
-    return NextResponse.json({ error: 'Category or SubCategory not found' }, { status: 404 });
-  }
+  const categoryId = formData.get('categoryId')?.toString() || null;
+  const subCategoryId = formData.get('subCategoryId')?.toString() || null;
+  const listDescription = JSON.parse(formData.get('listDescription')?.toString() ?? '[]') || [];
+  const fields = JSON.parse(formData.get('fields')?.toString() ?? '[]') || [];
+  const files = formData.getAll('images') as File[];
 
   try {
     const product = await prisma.product.create({
       data: {
         name,
         description,
-        image: imageUrl,
         categoryId,
         subCategoryId,
-        ListDescription: {
-          create: listDescription.map((desc: string) => ({ description: desc })),
-        },
       },
     });
 
-    if (fields.length) {
+    if (fields.length > 0) {
       await prisma.dynamicProduct.create({
         data: {
           productId: product.id,
           fields,
+        },
+      });
+    }
+
+    if (listDescription.length > 0) {
+      await prisma.listDescription.createMany({
+        data: listDescription.map((desc: string) => ({
+          productId: product.id,
+          description: desc,
+        })),
+      });
+    }
+
+    for (const file of files) {
+      if (!(file instanceof File) || file.size === 0) {
+        return NextResponse.json({ error: 'One or more files are invalid' }, { status: 400 });
+      }
+      const buffer = Buffer.from(await file.arrayBuffer());
+      const imageUrl = await uploadImageToCloudinary(buffer);
+
+      await prisma.imageProduct.create({
+        data: {
+          productId: product.id,
+          image: imageUrl,
         },
       });
     }

@@ -22,6 +22,7 @@ export async function GET(
     }
 
     return NextResponse.json(subcategory);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (err) {
     return NextResponse.json({ error: 'Failed to fetch subcategory.' }, { status: 500 });
   }
@@ -32,6 +33,13 @@ export async function PATCH(
   { params }: { params: { id: string } }
 ) {
   const { name, categoryId } = await req.json();
+
+  const existingSubCategory = await prisma.subCategory.findMany({
+    where: { name },
+  });
+  if (existingSubCategory.length>0) {
+    return NextResponse.json({ error: 'Subcategory name already exists.' }, { status: 400 });
+  }
 
   try {
     const updated = await prisma.subCategory.update({
