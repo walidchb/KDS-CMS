@@ -1,10 +1,13 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useCallback } from "react";
 import Modal from "./Modal";
 import { IoMdClose } from "react-icons/io";
 import ProductsStore from "@/stores/products";
+// import Image from "next/image";
 // import { useRouter } from "next/navigation";
 import TableLoader from "./TableLoader";
 import { IColumnType, Table } from "./Table";
+import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
+import useEmblaCarousel from "embla-carousel-react";
 
 interface Props {
   isOpen: boolean;
@@ -45,6 +48,17 @@ export default function ViewProductModal({ isOpen, product, onClose }: Props) {
     // addProduct,
   } = ProductsStore();
 
+  console.log(productDetails);
+  // const images = [
+  //   `https://picsum.photos/200/300?random=5`,
+  //   `https://picsum.photos/200/300?random=6`,
+  //   `https://picsum.photos/200/300?random=7`,
+  // ];
+
+  const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true });
+
+  const scrollPrev = useCallback(() => emblaApi?.scrollPrev(), [emblaApi]);
+  const scrollNext = useCallback(() => emblaApi?.scrollNext(), [emblaApi]);
   useEffect(() => {
     // Fetch product details and dynamic table data when the modal opens
     // and the product ID is available
@@ -223,6 +237,48 @@ export default function ViewProductModal({ isOpen, product, onClose }: Props) {
             columns={generateColumns(productDetails?.DynamicProduct[0]?.fields)}
           />
         ) : null}
+
+        {/* ✅ Carousel with Embla Carousel starts here */}
+        {productDetails?.ImageProduct?.length > 0 && (
+          <div className="w-full h-[400px] bg-gray-300 relative">
+            <div className="overflow-hidden h-full" ref={emblaRef}>
+              <div className="flex h-full">
+                {productDetails?.ImageProduct.map((src, index) => (
+                  <div
+                    className="min-w-full  h-full flex justify-center"
+                    key={index}
+                  >
+                    {/* <Image
+                    src={src?.image}
+                    alt={`Slide ${index}`}
+                    className="rounded-lg object-cover"
+                  /> */}
+                    <img
+                      src={src?.image}
+                      alt={`Slide ${index}`}
+                      className="rounded-lg object-cover"
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Navigation buttons */}
+            <button
+              onClick={scrollPrev}
+              className="absolute left-2 top-1/2 transform -translate-y-1/2 p-2 bg-white shadow rounded-full z-10"
+            >
+              <FaChevronLeft size={20} />
+            </button>
+            <button
+              onClick={scrollNext}
+              className="absolute right-2 top-1/2 transform -translate-y-1/2 p-2 bg-white shadow rounded-full z-10"
+            >
+              <FaChevronRight size={20} />
+            </button>
+          </div>
+        )}
+        {/* ✅ Carousel ends here */}
 
         {/* Close Button */}
         {/* <div className="flex justify-end mt-6">
