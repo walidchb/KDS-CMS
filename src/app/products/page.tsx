@@ -1,5 +1,5 @@
 "use client";
-import React, { JSX, useEffect, useState } from "react";
+import React, { JSX, useEffect, useState, Suspense } from "react";
 import { CiEdit } from "react-icons/ci";
 import { IoTrashOutline } from "react-icons/io5";
 import { FaRegEye } from "react-icons/fa";
@@ -301,143 +301,146 @@ export default function ProductsContent(): JSX.Element {
   // }, [successAddProduct, successPatch, successDelete]);
 
   return (
-    <div className="min-h-screen w-screen bg-gray-100">
-      {/* Tabs */}
-      <div className=" flex shadow-2xl rounded-b-2xl overflow-hidden w-full mb-4">
-        <button
-          onClick={() => {
-            router.replace("/products");
-          }}
-          className={`px-4 cursor-pointer w-full h-[60px] bg-red-500 text-white`}
-        >
-          Products
-        </button>
-        <button
-          onClick={() => {
-            router.replace("/categories");
-          }}
-          className={`px-4 cursor-pointer w-full h-[60px]  bg-gray-200 text-black`}
-        >
-          Categories / Sub-Categories
-        </button>
-      </div>
+    <Suspense fallback={<div>.</div>}>
+      <div className="min-h-screen w-screen bg-gray-100">
+        {/* Tabs */}
+        <div className=" flex shadow-2xl rounded-b-2xl overflow-hidden w-full mb-4">
+          <button
+            onClick={() => {
+              router.replace("/products");
+            }}
+            className={`px-4 cursor-pointer w-full h-[60px] bg-red-500 text-white`}
+          >
+            Products
+          </button>
+          <button
+            onClick={() => {
+              router.replace("/categories");
+            }}
+            className={`px-4 cursor-pointer w-full h-[60px]  bg-gray-200 text-black`}
+          >
+            Categories / Sub-Categories
+          </button>
+        </div>
 
-      {/* Content */}
-      <div className="space-y-4 p-10 text-black">
-        <div className="flex  flex-wrap justify-between items-center mb-10 w-full">
-          <h3 className="text-4xl font-semibold text-red-700">Products</h3>
-          <div className="flex justify-center space-x-2 items-center flex-wrap">
-            <InputWithIcon
-              onKeyDown={handleKeyDown}
-              // label="Search"
-              icon={<CiSearch className="text-gray-600" />}
-              placeholder={"search product"}
-              type="text"
-              id="email"
-              name="email"
-              className="min-w-[300px]  w-full sm:w-[48%] lg:w-[30%]"
-              value={name}
-              onChange={(e: { target: { value: string | null } }) =>
-                handleNameChange(e.target.value)
-              } // Replace setValue with onChange
-            />
+        {/* Content */}
+        <div className="space-y-4 p-10 text-black">
+          <div className="flex  flex-wrap justify-between items-center mb-10 w-full">
+            <h3 className="text-4xl font-semibold text-red-700">Products</h3>
+            <div className="flex justify-center space-x-2 items-center flex-wrap">
+              <InputWithIcon
+                onKeyDown={handleKeyDown}
+                // label="Search"
+                icon={<CiSearch className="text-gray-600" />}
+                placeholder={"search product"}
+                type="text"
+                id="email"
+                name="email"
+                className="min-w-[300px]  w-full sm:w-[48%] lg:w-[30%]"
+                value={name}
+                onChange={(e: { target: { value: string | null } }) =>
+                  handleNameChange(e.target.value)
+                } // Replace setValue with onChange
+              />
 
-            <Dropdown
-              className="min-w-[300px]  w-full sm:w-[48%] lg:w-[30%]"
-              placeholder={"Category"}
-              items={
-                dataCategories?.data?.map(
-                  (category: { name: string }) => category.name
-                ) || []
-              }
-              value={
-                dataCategories?.data?.find(
-                  (category: { id: string }) => category.id === selectedCategory
-                )?.name
-              }
-              setValue={handleCategoryChange}
-              // onClear={handleClear}
-            />
-            {selectedCategory && dataSubcategories?.length != 0 && (
               <Dropdown
                 className="min-w-[300px]  w-full sm:w-[48%] lg:w-[30%]"
-                placeholder={"sous-catégorie"}
+                placeholder={"Category"}
                 items={
-                  dataSubcategories?.map(
-                    (subcategory: { name: string }) => subcategory.name
+                  dataCategories?.data?.map(
+                    (category: { name: string }) => category.name
                   ) || []
                 }
                 value={
-                  dataSubcategories?.find(
-                    (subcategory: { id: string }) =>
-                      subcategory.id === selectedSubCategory
+                  dataCategories?.data?.find(
+                    (category: { id: string }) =>
+                      category.id === selectedCategory
                   )?.name
                 }
-                setValue={handleSubCategoryChange}
+                setValue={handleCategoryChange}
                 // onClear={handleClear}
               />
-            )}
-          </div>
-          <ButtonWithIcon
-            className="bg-green-600 px-3 h-10 text-white"
-            label="Add Product"
-            icon={<IoMdAdd className="text-white" />}
-            onClick={handleAddProduct}
-          />
-        </div>
-
-        {loadingProducts ? (
-          <TableLoader />
-        ) : (
-          <Table data={Dataproducts?.data} columns={productColumns} />
-        )}
-        <div className="mt-10 mb-20 flex  w-full justify-end">
-          <Pagination
-            totalPages={Dataproducts?.meta?.total}
-            itemsPerPage={20}
-            currentPage={page}
-            onPageChange={handlePageChange}
-          />
-        </div>
-
-        {Dataproducts?.data?.length === 0 && (
-          <div className="flex justify-center items-center h-40">
-            <p className="text-gray-500 text-lg">No products available.</p>
-          </div>
-        )}
-
-        <DeleteConfirmationModal
-          isOpen={showDeleteModal}
-          onClose={handleModalClose}
-          isSubCategory={false}
-          isProduct={true}
-          product={selectedProductToDelete ?? undefined}
-        />
-
-        <AddEditProductModal
-          dataCategories={dataCategories}
-          // dataSubcategories={dataSubcategories}
-          isOpen={addEditModal}
-          isEdit={editMode}
-          product={editMode ? selectedProductId : null}
-          onClose={handleModalClose}
-        />
-
-        <ViewProductModal
-          isOpen={isDetailsModalOpen}
-          product={selectedProductId}
-          onClose={() => setIsDetailsModalOpen(false)}
-        />
-
-        {globalAlertNotification.type !== null && (
-          <div className="absolute right-0 bottom-0 mr-6 mb-6">
-            <SuccessFailerAlert
-              message={globalAlertNotification.message}
-              type={globalAlertNotification.type}
+              {selectedCategory && dataSubcategories?.length != 0 && (
+                <Dropdown
+                  className="min-w-[300px]  w-full sm:w-[48%] lg:w-[30%]"
+                  placeholder={"sous-catégorie"}
+                  items={
+                    dataSubcategories?.map(
+                      (subcategory: { name: string }) => subcategory.name
+                    ) || []
+                  }
+                  value={
+                    dataSubcategories?.find(
+                      (subcategory: { id: string }) =>
+                        subcategory.id === selectedSubCategory
+                    )?.name
+                  }
+                  setValue={handleSubCategoryChange}
+                  // onClear={handleClear}
+                />
+              )}
+            </div>
+            <ButtonWithIcon
+              className="bg-green-600 px-3 h-10 text-white"
+              label="Add Product"
+              icon={<IoMdAdd className="text-white" />}
+              onClick={handleAddProduct}
             />
           </div>
-        )}
+
+          {loadingProducts ? (
+            <TableLoader />
+          ) : (
+            <Table data={Dataproducts?.data} columns={productColumns} />
+          )}
+          <div className="mt-10 mb-20 flex  w-full justify-end">
+            <Pagination
+              totalPages={Dataproducts?.meta?.total}
+              itemsPerPage={20}
+              currentPage={page}
+              onPageChange={handlePageChange}
+            />
+          </div>
+
+          {Dataproducts?.data?.length === 0 && (
+            <div className="flex justify-center items-center h-40">
+              <p className="text-gray-500 text-lg">No products available.</p>
+            </div>
+          )}
+
+          <DeleteConfirmationModal
+            isOpen={showDeleteModal}
+            onClose={handleModalClose}
+            isSubCategory={false}
+            isProduct={true}
+            product={selectedProductToDelete ?? undefined}
+          />
+
+          <AddEditProductModal
+            dataCategories={dataCategories}
+            // dataSubcategories={dataSubcategories}
+            isOpen={addEditModal}
+            isEdit={editMode}
+            product={editMode ? selectedProductId : null}
+            onClose={handleModalClose}
+          />
+
+          <ViewProductModal
+            isOpen={isDetailsModalOpen}
+            product={selectedProductId}
+            onClose={() => setIsDetailsModalOpen(false)}
+          />
+
+          {globalAlertNotification.type !== null && (
+            <div className="absolute right-0 bottom-0 mr-6 mb-6">
+              <SuccessFailerAlert
+                message={globalAlertNotification.message}
+                type={globalAlertNotification.type}
+              />
+            </div>
+          )}
+        </div>
       </div>
-    </div>
+    </Suspense>
   );
 }
