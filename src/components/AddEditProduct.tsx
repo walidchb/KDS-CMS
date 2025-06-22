@@ -29,6 +29,8 @@ export default function AddEditProductModal({
 }: Props) {
   const [loader, setloader] = useState(true);
   const [name, setName] = useState("");
+  const [specName, setSpecName] = useState("");
+  const [ref, setRef] = useState("");
   const [bullets, setBullets] = useState<string[]>([]);
   const [description, setDescription] = useState("");
   const [table, setTable] = useState<string[][]>([[""]]);
@@ -121,6 +123,8 @@ export default function AddEditProductModal({
   useEffect(() => {
     if (productDetails) {
       setName(productDetails?.name || "");
+      setRef(productDetails?.ref || "");
+      setSpecName(productDetails?.specName || "");
       setDescription(productDetails?.description || "");
       setSelectedCategory(productDetails?.Category?.id || null);
       setSelectedSubCategory(productDetails?.SubCategory?.id || null);
@@ -286,6 +290,8 @@ export default function AddEditProductModal({
     }
     formdata.append("name", name);
     formdata.append("description", description);
+    formdata.append("specName", specName);
+    formdata.append("ref", ref);
     // console.log(JSON.stringify(formdata));
     for (const [key, value] of formdata.entries()) {
       console.log(`${key}:`, value);
@@ -323,10 +329,19 @@ export default function AddEditProductModal({
     <Modal onClose={onClose}>
       <div className="max-h-[90vh] overflow-y-auto p-6 space-y-4">
         <h2 className="text-2xl font-semibold text-black">
-          {isEdit ? "Edit Product" : "Add Product"}
+          {isEdit ? "Edit Product" : "Add Producttt"}
         </h2>
 
         {/* Name */}
+        <div>
+          <label className="block font-medium mb-1">Referance</label>
+          <input
+            value={ref}
+            onChange={(e) => setRef(e.target.value)}
+            className="w-full border border-gray-300 p-2 rounded"
+            placeholder="Enter The ref of the product"
+          />
+        </div>
         <div>
           <label className="block font-medium mb-1">Name</label>
           <input
@@ -334,6 +349,15 @@ export default function AddEditProductModal({
             onChange={(e) => setName(e.target.value)}
             className="w-full border border-gray-300 p-2 rounded"
             placeholder="Enter product name"
+          />
+        </div>
+        <div>
+          <label className="block font-medium mb-1">Specific Name</label>
+          <input
+            value={specName}
+            onChange={(e) => setSpecName(e.target.value)}
+            className="w-full border border-gray-300 p-2 rounded"
+            placeholder="Enter specific name of the product"
           />
         </div>
 

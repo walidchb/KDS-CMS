@@ -21,7 +21,9 @@ export async function GET(req: NextRequest) {
       orderBy: { name: 'desc' },
       select: {
         id: true,
+        ref:true,
         name: true,
+        specName  : true,
         description: true,
         ListDescription: { select: { description: true } },
         Category: { select: { id: true, name: true } },
@@ -43,6 +45,8 @@ export async function POST(req: NextRequest) {
   const formData = await req.formData();
 
   const name = formData.get('name')?.toString() ?? '';
+  const ref = formData.get('ref')?.toString() ?? '';
+  const specName = formData.get('specName')?.toString() ?? '';
   const description = formData.get('description')?.toString() ?? '';
   const categoryId = formData.get('categoryId')?.toString() || null;
   const subCategoryId = formData.get('subCategoryId')?.toString() || null;
@@ -53,7 +57,9 @@ export async function POST(req: NextRequest) {
   try {
     const product = await prisma.product.create({
       data: {
+        ref,
         name,
+        specName,
         description,
         categoryId,
         subCategoryId,

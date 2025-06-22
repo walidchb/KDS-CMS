@@ -11,7 +11,9 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       where: { id},
       select: {
         id: true,
+        ref:true,
         name: true,
+        specName:true,
         description: true,
         ListDescription: {
           select: {
@@ -48,6 +50,8 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     where: { id },
   });
   const name = formData.get('name')?.toString() ?? product?.name;
+  const ref = formData.get('ref')?.toString() ?? product?.ref;
+  const specName = formData.get('specName')?.toString() ?? product?.specName;
   const description = formData.get('description')?.toString() ?? product?.description;
   const categoryId = formData.get('categoryId')?.toString() ?? product?.categoryId;
   const subCategoryId = formData.get('subCategoryId')?.toString() ?? product?.subCategoryId;
@@ -73,6 +77,8 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       where: { id:id },
       data: {
         name,
+        ref,
+        specName,
         description,
         categoryId: categoryId ? String(categoryId) : undefined,
         subCategoryId: subCategoryId ? String(subCategoryId) : undefined,

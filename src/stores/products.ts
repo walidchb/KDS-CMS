@@ -16,6 +16,8 @@ interface AppState {
     productDetails: {
         id: string;
         name: string;
+        ref?: string;
+        specName?: string;
         description: string;
         ListDescription: Array<{
             id: string;

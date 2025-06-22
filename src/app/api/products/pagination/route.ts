@@ -24,7 +24,9 @@ export async function GET(req: NextRequest) {
         orderBy: { name: 'desc' },
         select: {
           id: true,
+          ref:true,
           name: true,
+          specName:true,
           description: true,
           ListDescription: { select: { description: true } },
           Category: { select: { id: true, name: true } },
