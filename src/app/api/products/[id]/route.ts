@@ -98,7 +98,8 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       }
     }
     if (fields && fields != '[]') {
-      await prisma.dynamicProduct.delete({
+      
+      await prisma.dynamicProduct.deleteMany({
         where: { productId:id },
       });
       await prisma.dynamicProduct.create({

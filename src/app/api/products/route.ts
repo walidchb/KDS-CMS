@@ -65,13 +65,14 @@ export async function POST(req: NextRequest) {
         subCategoryId,
       },
     });
-
-    if (fields.length > 0) {
+   
+    if (fields && Object.keys(fields).length > 0 && Object.values(fields).some(arr => Array.isArray(arr) && arr.length > 0)) {
+      
       await prisma.dynamicProduct.create({
-        data: {
-          productId: product.id,
-          fields,
-        },
+      data: {
+        productId: product.id,
+        fields,
+      },
       });
     }
 

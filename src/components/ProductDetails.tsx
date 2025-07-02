@@ -154,12 +154,27 @@ export default function ViewProductModal({ isOpen, product, onClose }: Props) {
             <IoMdClose />
           </button>
         </div>
+        {/* ref */}
+        <div>
+          <label className="block font-medium mb-1">Ref</label>
+          <div className="border border-gray-300 p-2 rounded bg-gray-50">
+            {productDetails?.ref}
+          </div>
+        </div>
 
         {/* Name */}
         <div>
           <label className="block font-medium mb-1">Name</label>
           <div className="border border-gray-300 p-2 rounded bg-gray-50">
             {productDetails?.name}
+          </div>
+        </div>
+
+        {/* spec name */}
+        <div>
+          <label className="block font-medium mb-1">Spec Name</label>
+          <div className="border border-gray-300 p-2 rounded bg-gray-50">
+            {productDetails?.specName}
           </div>
         </div>
 
