@@ -42,6 +42,18 @@ interface AppState {
             
             image: string;
         }>;
+        customImages: Array<{
+            customImage: {
+                id: string;
+                name: string;
+                image: string;
+                type: number; // Assuming type is a number
+            };
+        }>;
+        stepOne?: string;
+        stepTwo?: string;
+        stepThree?: string;
+        stepFour?: string;
     };
     successProductDetails: boolean;
     errorGetProductDetails: string | null;
@@ -127,6 +139,11 @@ const ProductsStore = create<AppState>((set) => ({
             },
         ],
         ImageProduct: [],
+        customImages: [],
+        stepOne: "",
+        stepTwo: "",
+        stepThree: "",
+        stepFour: "",
     },
     successProductDetails: false,
     errorGetProductDetails: null,
@@ -218,6 +235,11 @@ console.log("products", response.data);
                 },
             ],
             ImageProduct: [],
+            customImages: [],
+            stepOne: "",
+            stepTwo: "",
+            stepThree: "",
+            stepFour: "",
         }, errorGetProductDetails: null, loadingProductDetails: false });
     },
     resetDynamicTable: () => {

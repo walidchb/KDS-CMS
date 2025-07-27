@@ -30,18 +30,23 @@ model SubCategory {
 }
 
 model Product {
-  id              String            @id @default(cuid())
+  id              String               @id @default(cuid())
   ref             String?
   name            String
   specName        String?
   description     String
   categoryId      String? // Made optional
   subCategoryId   String? // Made optional
-  Category        Category?         @relation(fields: [categoryId], references: [id])
-  SubCategory     SubCategory?      @relation(fields: [subCategoryId], references: [id])
+  stepOne         String?
+  stepTwo         String?
+  stepThree       String?
+  stepFour        String?
+  Category        Category?            @relation(fields: [categoryId], references: [id])
+  SubCategory     SubCategory?         @relation(fields: [subCategoryId], references: [id])
   ListDescription listDescription[]
   DynamicProduct  DynamicProduct[]
   ImageProduct    ImageProduct[]
+  customImages    ProductCustomImage[] // <-- Many-to-many relation
 }
 
 model listDescription {
@@ -63,4 +68,22 @@ model ImageProduct {
   image     String
   productId String
   Product   Product @relation(fields: [productId], references: [id])
+}
+
+model customImage {
+  id       String               @id @unique @default(cuid())
+  name     String               @default("")
+  image    String
+  type     Int
+  products ProductCustomImage[] // <-- Many-to-many relation
+}
+
+model ProductCustomImage {
+  productId     String
+  customImageId String
+
+  Product     Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
+  customImage customImage @relation(fields: [customImageId], references: [id], onDelete: Cascade)
+
+  @@id([productId, customImageId]) // Composite primary key for join table
 }

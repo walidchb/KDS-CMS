@@ -1,3 +1,5 @@
+"use client";
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState, useEffect } from "react";
 import Modal from "./Modal";
 import { IoMdAdd } from "react-icons/io";
@@ -5,6 +7,7 @@ import { IoTrashOutline } from "react-icons/io5";
 import ProductsStore from "@/stores/products";
 import Dropdown from "./DropDown";
 import ButtonWithIcon from "./ButtonWithIcon";
+import CustomImagesStore from "@/stores/customImages";
 
 interface Props {
   isOpen?: boolean;
@@ -35,7 +38,17 @@ export default function AddEditProductModal({
   const [description, setDescription] = useState("");
   const [table, setTable] = useState<string[][]>([[""]]);
   const [images, setImages] = useState<ImageType[]>([]);
+  const { dataCustomImages, fetchDataCustomImages } = CustomImagesStore();
+  const [stepOne, setStepOne] = useState("");
+  const [stepTwo, setStepTwo] = useState("");
+  const [stepThree, setStepThree] = useState("");
+  const [stepFour, setStepFour] = useState("");
 
+  useEffect(() => {
+    if (isOpen) {
+      fetchDataCustomImages("/customImages");
+    }
+  }, [isOpen]);
   const {
     fetchDataCategories,
     dataCategories,
@@ -92,6 +105,12 @@ export default function AddEditProductModal({
     null
   );
 
+  const [selectedCharacteristicImages, setSelectedCharacteristicImages] =
+    useState<string[]>([]);
+  const [selectedMachineImages, setSelectedMachineImages] = useState<string[]>(
+    []
+  );
+
   const handleCategoryChange = (value: string | null) => {
     const found = dataCategories?.data?.find(
       (cat: { name: string }) => cat.name === value
@@ -137,6 +156,26 @@ export default function AddEditProductModal({
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         productDetails?.ImageProduct?.map((img: any) => img.image) || []
       );
+      setSelectedCharacteristicImages(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        productDetails?.customImages
+          ?.filter((img: any) => img.customImage.type === 1)
+          .map(
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            (img: any) => img.customImage.id
+          ) || []
+      );
+      setSelectedMachineImages(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        productDetails?.customImages
+          ?.filter((img: any) => img.customImage.type === 2)
+          .map((img: any) => img.customImage.id) || []
+      );
+
+      setStepOne(productDetails?.stepOne || "");
+      setStepTwo(productDetails?.stepTwo || "");
+      setStepThree(productDetails?.stepThree || "");
+      setStepFour(productDetails?.stepFour || "");
 
       if (productDetails?.DynamicProduct?.length > 0) {
         const fields: Record<string, string[] | string> =
@@ -244,16 +283,28 @@ export default function AddEditProductModal({
     setImages(updated);
   };
 
+  const toggleImageSelection = (id: string, type: number) => {
+    if (type === 1) {
+      setSelectedCharacteristicImages((prev) =>
+        prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]
+      );
+    } else if (type === 2) {
+      setSelectedMachineImages((prev) =>
+        prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]
+      );
+    }
+  };
+
   const handleSubmit = () => {
     const formdata = new FormData();
 
     // if ()
 
     if (images.length > 0) {
-      console.log("image");
+      // console.log("image");
       images.forEach((image) => {
         if (image instanceof File) {
-          console.log(image);
+          // console.log(image);
           formdata.append("images", image);
         }
       });
@@ -292,14 +343,23 @@ export default function AddEditProductModal({
     formdata.append("description", description);
     formdata.append("specName", specName);
     formdata.append("ref", ref);
-    // console.log(JSON.stringify(formdata));
-    for (const [key, value] of formdata.entries()) {
-      console.log(`${key}:`, value);
-    }
+    formdata.append(
+      "characteristicImages",
+      JSON.stringify(selectedCharacteristicImages)
+    );
+    formdata.append("machineImages", JSON.stringify(selectedMachineImages));
+    formdata.append("stepOne", stepOne);
+    formdata.append("stepTwo", stepTwo);
+    formdata.append("stepThree", stepThree);
+    formdata.append("stepFour", stepFour);
 
+    // console.log(JSON.stringify(formdata));
+    // for (const [key, value] of formdata.entries()) {
+    //   console.log(`${key}:`, value);
+    // }
+
+    // console.log("formData", formdata);
     if (isEdit) {
-      console.log("ediiiit");
-      console.log(product);
       patchProduct(`/products/${product}/`, formdata);
     } else {
       addProduct(`/products`, formdata);
@@ -549,6 +609,108 @@ export default function AddEditProductModal({
               <IoMdAdd /> Add Column
             </button>
           </div>
+        </div>
+
+        {/* --- Characteristic Images --- */}
+        <div>
+          <label className="block font-medium mb-1">
+            Select Characteristic Images
+          </label>
+          <div className="flex flex-wrap gap-3">
+            {dataCustomImages
+              ?.filter((img: any) => img.type === 1)
+              .map((img: any) => (
+                <div
+                  key={img.id}
+                  onClick={() => toggleImageSelection(img.id, 1)}
+                  className={`cursor-pointer flex flex-col justify-center items-center border-2 rounded  w-32 h-32  ${
+                    selectedCharacteristicImages.includes(img.id)
+                      ? "border-blue-600"
+                      : "border-gray-300"
+                  }`}
+                >
+                  {/* <div className=" bg-yellow-300 "> */}
+                  <img
+                    src={img.image}
+                    alt="characteristic"
+                    className="w-24 h-24 object-cover"
+                  />
+                  <span className="block text-center">{img.name}sds</span>
+                  {/* </div> */}
+                </div>
+              ))}
+          </div>
+        </div>
+
+        {/* --- Machine Images --- */}
+        <div>
+          <label className="block font-medium mb-1 mt-4">
+            Select Machine Images
+          </label>
+          <div className="flex flex-wrap gap-3">
+            {dataCustomImages
+              ?.filter((img: any) => img.type === 2)
+              .map((img: any) => (
+                <div
+                  key={img.id}
+                  onClick={() => toggleImageSelection(img.id, 2)}
+                  className={`text-black cursor-pointer border-2 rounded w-24 h-24 overflow-hidden ${
+                    selectedMachineImages.includes(img.id)
+                      ? "border-blue-600"
+                      : "border-gray-300"
+                  }`}
+                >
+                  <img
+                    src={img.image}
+                    alt="machine"
+                    className="w-full h-full object-cover"
+                  />
+                  <span>{img.name}sdsd</span>
+                </div>
+              ))}
+          </div>
+        </div>
+
+        {/* --- End of Machine Images --- */}
+
+        <div>
+          <label className="block font-medium mb-1">Step One</label>
+          <input
+            value={stepOne}
+            onChange={(e) => setStepOne(e.target.value)}
+            className="w-full border border-gray-300 p-2 rounded"
+            placeholder="Enter Step One description"
+          />
+        </div>
+
+        <div>
+          <label className="block font-medium mb-1">Step Two</label>
+          <input
+            value={stepTwo}
+            onChange={(e) => setStepTwo(e.target.value)}
+            className="w-full border border-gray-300 p-2 rounded"
+            placeholder="Enter Step Two description"
+          />
+        </div>
+
+        <div>
+          <label className="block font-medium mb-1">Step Three</label>
+          <input
+            value={stepThree}
+            onChange={(e) => setStepThree(e.target.value)}
+            className="w-full border border-gray-300 p-2 rounded"
+            placeholder="Enter Step Three description"
+          />
+        </div>
+
+        <div>
+          <label className="block font-medium mb-1">Step Four</label>
+          <input
+            value={stepFour}
+            onChange={(e) => setStepFour(e.target.value)}
+            className="w-full border border-gray-300 p-2 rounded"
+            placeholder="Enter Step Four description"
+          />
         </div>
 
         {/* Actions */}

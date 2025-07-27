@@ -21,15 +21,27 @@ export async function GET(req: NextRequest) {
       orderBy: { name: 'desc' },
       select: {
         id: true,
-        ref:true,
+        ref: true,
         name: true,
-        specName  : true,
+        specName: true,
         description: true,
         ListDescription: { select: { description: true } },
         Category: { select: { id: true, name: true } },
         SubCategory: { select: { id: true, name: true } },
         DynamicProduct: { select: { fields: true } },
         ImageProduct: { select: { image: true } },
+        customImages: {
+          select: {
+            customImage: {
+              select: {
+                id: true,
+                name: true,
+                image: true,
+                type: true,
+              },
+            },
+          },
+        },
       },
     });
 
@@ -51,8 +63,14 @@ export async function POST(req: NextRequest) {
   const categoryId = formData.get('categoryId')?.toString() || null;
   const subCategoryId = formData.get('subCategoryId')?.toString() || null;
   const listDescription = JSON.parse(formData.get('listDescription')?.toString() ?? '[]') || [];
-  const fields = JSON.parse(formData.get('fields')?.toString() ?? '[]') || [];
   const files = formData.getAll('images') as File[];
+  const stepOne = formData.get('stepOne')?.toString() ?? '';
+  const stepTwo = formData.get('stepTwo')?.toString() ?? '';
+  const stepThree = formData.get('stepThree')?.toString() ?? '';
+  const stepFour = formData.get('stepFour')?.toString() ?? '';
+
+  const characteristicImages = JSON.parse(formData.get('characteristicImages')?.toString() ?? '[]') || [];
+  const machineImages = JSON.parse(formData.get('machineImages')?.toString() ?? '[]') || [];
 
   try {
     const product = await prisma.product.create({
@@ -63,18 +81,12 @@ export async function POST(req: NextRequest) {
         description,
         categoryId,
         subCategoryId,
+        stepOne,
+        stepTwo,  
+        stepThree,
+        stepFour,
       },
     });
-   
-    if (fields && Object.keys(fields).length > 0 && Object.values(fields).some(arr => Array.isArray(arr) && arr.length > 0)) {
-      
-      await prisma.dynamicProduct.create({
-      data: {
-        productId: product.id,
-        fields,
-      },
-      });
-    }
 
     if (listDescription.length > 0) {
       await prisma.listDescription.createMany({
@@ -82,6 +94,24 @@ export async function POST(req: NextRequest) {
           productId: product.id,
           description: desc,
         })),
+      });
+    }
+
+    // Handle customImages from both characteristic & machine
+    const customImagesData = [
+      ...characteristicImages.map((id: string) => ({
+        productId: product.id,
+        customImageId: id,
+      })),
+      ...machineImages.map((id: string) => ({
+        productId: product.id,
+        customImageId: id,
+      })),
+    ];
+
+    if (customImagesData.length > 0) {
+      await prisma.productCustomImage.createMany({
+        data: customImagesData,
       });
     }
 
@@ -106,3 +136,4 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Could not create product.' }, { status: 400 });
   }
 }
+

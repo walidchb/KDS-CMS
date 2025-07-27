@@ -24,15 +24,27 @@ export async function GET(req: NextRequest) {
         orderBy: { name: 'desc' },
         select: {
           id: true,
-          ref:true,
+          ref: true,
           name: true,
-          specName:true,
+          specName: true,
           description: true,
           ListDescription: { select: { description: true } },
           Category: { select: { id: true, name: true } },
           SubCategory: { select: { id: true, name: true } },
           DynamicProduct: { select: { fields: true } },
           ImageProduct: { select: { image: true } },
+          customImages: {
+            select: {
+              customImage: {
+                select: {
+                  id: true,
+                  name: true,
+                  image: true,
+                  type: true,
+                },
+              },
+            },
+          },
         },
       }),
       prisma.product.count(),

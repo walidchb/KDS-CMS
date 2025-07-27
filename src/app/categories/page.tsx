@@ -278,9 +278,17 @@ export default function CategoryContent(): JSX.Element {
           onClick={() => {
             router.replace("/categories");
           }}
-          className={`px-4 cursor-pointer w-full h-[60px] bg-red-500 text-white`}
+          className={`px-4 border-x-2 border-gray-400 cursor-pointer w-full h-[60px]  bg-red-500 text-white`}
         >
           Categories / Sub-Categories
+        </button>
+        <button
+          onClick={() => {
+            router.replace("/customImages");
+          }}
+          className={`px-4 cursor-pointer w-full h-[60px]  bg-gray-200 text-black`}
+        >
+          Images
         </button>
       </div>
 

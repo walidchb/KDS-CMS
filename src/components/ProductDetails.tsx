@@ -156,7 +156,7 @@ export default function ViewProductModal({ isOpen, product, onClose }: Props) {
         </div>
         {/* ref */}
         <div>
-          <label className="block font-medium mb-1">Ref</label>
+          <label className="block  font-bold mb-4">Ref</label>
           <div className="border border-gray-300 p-2 rounded bg-gray-50">
             {productDetails?.ref}
           </div>
@@ -164,7 +164,7 @@ export default function ViewProductModal({ isOpen, product, onClose }: Props) {
 
         {/* Name */}
         <div>
-          <label className="block font-medium mb-1">Name</label>
+          <label className="block  font-bold mb-4">Name</label>
           <div className="border border-gray-300 p-2 rounded bg-gray-50">
             {productDetails?.name}
           </div>
@@ -172,7 +172,7 @@ export default function ViewProductModal({ isOpen, product, onClose }: Props) {
 
         {/* spec name */}
         <div>
-          <label className="block font-medium mb-1">Spec Name</label>
+          <label className="block  font-bold mb-4">Spec Name</label>
           <div className="border border-gray-300 p-2 rounded bg-gray-50">
             {productDetails?.specName}
           </div>
@@ -180,13 +180,13 @@ export default function ViewProductModal({ isOpen, product, onClose }: Props) {
 
         <div className="flex space-x-2 justify-between items-center">
           <div className="w-1/2">
-            <label className="block font-medium mb-1">Category</label>
+            <label className="block  font-bold mb-4">Category</label>
             <div className="border border-gray-300 p-2 rounded bg-gray-50">
               {productDetails?.Category?.name}
             </div>
           </div>
           <div className="w-1/2">
-            <label className="block font-medium mb-1">Sub categpry</label>
+            <label className="block  font-bold mb-4">Sub categpry</label>
             <div className="border border-gray-300 p-2 rounded bg-gray-50">
               {productDetails?.SubCategory?.name}
             </div>
@@ -195,7 +195,7 @@ export default function ViewProductModal({ isOpen, product, onClose }: Props) {
 
         {/* Bullets */}
         <div>
-          <label className="block font-medium mb-1">Des tirets</label>
+          <label className="block  font-bold mb-4">Des tirets</label>
           {productDetails?.ListDescription?.length !== 0 ? (
             <ul className="px-[30px] border border-gray-300 py-2 rounded bg-gray-50 list-disc space-y-1">
               {productDetails?.ListDescription?.map(
@@ -213,7 +213,7 @@ export default function ViewProductModal({ isOpen, product, onClose }: Props) {
 
         {/* Description */}
         <div>
-          <label className="block font-medium mb-1">Description</label>
+          <label className="block  font-bold mb-4">Description</label>
           <div className="border border-gray-300 p-3 rounded bg-gray-50 whitespace-pre-wrap">
             {productDetails?.description}
           </div>
@@ -222,7 +222,7 @@ export default function ViewProductModal({ isOpen, product, onClose }: Props) {
         {/* Images */}
         {/* {productDetails?.images && productDetails?.images?.length > 0 && (
           <div>
-            <label className="block font-medium mb-1">Images</label>
+            <label className="block  font-bold mb-4">Images</label>
             <div className="flex flex-wrap gap-4">
               {productDetails?.images.map(
                 (image: Blob | MediaSource, index: number) => (
@@ -294,6 +294,93 @@ export default function ViewProductModal({ isOpen, product, onClose }: Props) {
           </div>
         )}
         {/* ✅ Carousel ends here */}
+
+        {/* characteristic images */}
+
+        {productDetails?.customImages?.filter(
+          (img) => img.customImage.type === 1
+        ).length > 0 && (
+          <label className="block  font-bold my-8">Characteristic Images</label>
+        )}
+        {productDetails?.customImages?.filter(
+          (img) => img.customImage.type === 1
+        ).length > 0 && (
+          <div className="flex  flex-wrap flex-row gap-y-8 justify-start items-start">
+            {productDetails?.customImages
+              .filter((img) => img.customImage.type === 1)
+              .map((img, index) => (
+                <div
+                  className="  mx-2 flex flex-col items-center justify-center"
+                  key={index}
+                >
+                  <img
+                    src={img.customImage.image}
+                    alt={`Characteristic Image ${index}`}
+                    className="rounded-lg h-32 w-32"
+                  />
+                  <div className="text-center mt-1">{img.customImage.name}</div>
+                </div>
+              ))}{" "}
+          </div>
+        )}
+
+        {/* machine images */}
+        {productDetails?.customImages?.filter(
+          (img) => img.customImage.type === 1
+        ).length > 0 && (
+          <label className="block  font-bold my-8">Machine Images</label>
+        )}
+        {productDetails?.customImages?.length > 0 && (
+          <div className="flex  flex-wrap flex-row gap-y-8 justify-start items-start">
+            {productDetails?.customImages
+              .filter((img) => img.customImage.type === 2)
+              .map((img, index) => (
+                <div
+                  className="  mx-2 flex flex-col items-center justify-center"
+                  key={index}
+                >
+                  <img
+                    src={img.customImage.image}
+                    alt={`Characteristic Image ${index}`}
+                    className="rounded-lg h-32 w-32"
+                  />
+                  <div className="text-center mt-1">{img.customImage.name}</div>
+                </div>
+              ))}{" "}
+          </div>
+        )}
+
+        {/* step one */}
+        {productDetails?.stepOne && (
+          <div>
+            <label className="block  font-bold my-4">Step One :</label>
+            <div>{productDetails?.stepOne}</div>
+          </div>
+        )}
+
+        {/* step two */}
+        {productDetails?.stepTwo && (
+          <div>
+            <label className="block  font-bold my-4">Step Two :</label>
+            <div>{productDetails?.stepTwo}</div>
+          </div>
+        )}
+
+        {/* step three */}
+        {productDetails?.stepThree && (
+          <div>
+            <label className="block  font-bold my-4">Step Three :</label>
+            <div>{productDetails?.stepThree}</div>
+          </div>
+        )}
+
+        {/* step four */}
+        {productDetails?.stepFour && (
+          <div>
+            <label className="block  font-bold my-4">Step Four :</label>
+            <div>{productDetails?.stepFour}</div>
+          </div>
+        )}
 
         {/* Close Button */}
         {/* <div className="flex justify-end mt-6">

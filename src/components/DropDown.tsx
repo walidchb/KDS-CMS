@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { AiOutlineClose } from "react-icons/ai";
 import { GoChevronDown } from "react-icons/go";
 
@@ -32,9 +32,9 @@ function Dropdown<T extends string | number>({
     onClear?.();
   };
 
-  useEffect(() => {
-    console.log("value", value);
-  }, [value]);
+  // useEffect(() => {
+  //   console.log("value", value);
+  // }, [value]);
 
   return (
     <div className={`relative ${className}`}>
