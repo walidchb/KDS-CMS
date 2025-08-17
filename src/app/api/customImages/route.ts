@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import uploadImageToCloudinary from "@/utils/uploadImageToCloudinary";
+import {uploadImageToCloudinary} from "@/utils/uploadImageToCloudinary";
 
 // GET all custom images (with optional filtering by type)
 export async function GET(req: NextRequest) {
