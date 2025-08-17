@@ -154,7 +154,7 @@ export default function ImagesContent(): JSX.Element {
       renderTitle: () => <span className="text-center">Type</span>,
       render: (_, { type }) => (
         <span className="text-center capitalize">
-          {type === 2 ? "machine" : "characteristic"}
+          {type === 2 ? "machine" : type === 1 ? "characteristic" : "steps"}
         </span>
       ),
     },

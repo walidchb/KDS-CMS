@@ -36,7 +36,10 @@ export default function AddImageModal({ isOpen, onClose }: Props) {
   const handleSubmit = () => {
     const formdata = new FormData();
     formdata.append("name", name);
-    formdata.append("type", type === "characteristic" ? "1" : "2");
+    formdata.append(
+      "type",
+      type === "characteristic" ? "1" : type === "machine" ? "2" : "3"
+    );
 
     images.forEach((image) => {
       if (image instanceof File) {
@@ -81,6 +84,7 @@ export default function AddImageModal({ isOpen, onClose }: Props) {
           >
             <option value="machine">Machine</option>
             <option value="characteristic">Characteristic</option>
+            <option value="steps">Steps</option>
           </select>
         </div>
 

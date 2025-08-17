@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import uploadImageToCloudinary from '@/utils/uploadImageToCloudinary';
+import {uploadImageToCloudinary , uploadDocumentToCloudinary}from '@/utils/uploadImageToCloudinary';
 
 // GET products
 export async function GET(req: NextRequest) {
@@ -42,6 +42,7 @@ export async function GET(req: NextRequest) {
             },
           },
         },
+        technicalSheet: true,
       },
     });
 
@@ -64,13 +65,18 @@ export async function POST(req: NextRequest) {
   const subCategoryId = formData.get('subCategoryId')?.toString() || null;
   const listDescription = JSON.parse(formData.get('listDescription')?.toString() ?? '[]') || [];
   const files = formData.getAll('images') as File[];
-  const stepOne = formData.get('stepOne')?.toString() ?? '';
-  const stepTwo = formData.get('stepTwo')?.toString() ?? '';
-  const stepThree = formData.get('stepThree')?.toString() ?? '';
-  const stepFour = formData.get('stepFour')?.toString() ?? '';
+  const technicalSheetFile = formData.get('technicalSheet') as File | null;
+  let technicalSheetUrl = '';
+
+  if (technicalSheetFile && technicalSheetFile.size > 0) {
+    const buffer = Buffer.from(await technicalSheetFile.arrayBuffer());
+    technicalSheetUrl = await uploadDocumentToCloudinary(buffer); // You may want a separate upload function for non-image files
+  }
+ 
 
   const characteristicImages = JSON.parse(formData.get('characteristicImages')?.toString() ?? '[]') || [];
   const machineImages = JSON.parse(formData.get('machineImages')?.toString() ?? '[]') || [];
+  const stepsImages = JSON.parse(formData.get('stepsImages')?.toString() ?? '[]') || [];
 
   try {
     const product = await prisma.product.create({
@@ -81,10 +87,8 @@ export async function POST(req: NextRequest) {
         description,
         categoryId,
         subCategoryId,
-        stepOne,
-        stepTwo,  
-        stepThree,
-        stepFour,
+        technicalSheet: technicalSheetUrl,
+        
       },
     });
 
@@ -107,6 +111,11 @@ export async function POST(req: NextRequest) {
         productId: product.id,
         customImageId: id,
       })),
+      ...stepsImages.map((id: string) => ({
+        productId: product.id,
+        customImageId: id,
+      })),
+
     ];
 
     if (customImagesData.length > 0) {
@@ -129,6 +138,9 @@ export async function POST(req: NextRequest) {
         },
       });
     }
+
+
+
 
     return NextResponse.json(product, { status: 201 });
   } catch (err) {

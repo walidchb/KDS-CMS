@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import uploadImageToCloudinary from '@/utils/uploadImageToCloudinary';
+import {uploadImageToCloudinary , uploadDocumentToCloudinary}from '@/utils/uploadImageToCloudinary';
 
 // -------- GET PRODUCT BY ID --------
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -20,10 +20,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
         SubCategory: { select: { id: true, name: true } },
         DynamicProduct: { select: { fields: true } },
         ImageProduct: { select: { image: true } },
-        stepOne: true,
-        stepTwo: true,
-        stepThree: true,
-        stepFour: true,
+        technicalSheet: true,
         customImages: {
           select: {
             customImage: {
@@ -64,14 +61,18 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   const categoryId = formData.get('categoryId')?.toString() ?? product?.categoryId;
   const subCategoryId = formData.get('subCategoryId')?.toString() ?? product?.subCategoryId;
   const listDescription = JSON.parse(formData.get('listDescription')?.toString() ?? '[]');
-  const stepOne = formData.get('stepOne')?.toString() ?? '';
-  const stepTwo = formData.get('stepTwo')?.toString() ?? '';
-  const stepThree = formData.get('stepThree')?.toString() ?? '';
-  const stepFour = formData.get('stepFour')?.toString() ?? '';
+  
 
   const characteristicImages = JSON.parse(formData.get('characteristicImages')?.toString() ?? '[]') || [];
   const machineImages = JSON.parse(formData.get('machineImages')?.toString() ?? '[]') || [];
-
+  const stepsImages = JSON.parse(formData.get('stepsImages')?.toString() ?? '[]') || [];
+  const technicalSheetFile = formData.get('technicalSheet') as File | null;
+    let technicalSheetUrl = '';
+  
+    if (technicalSheetFile && technicalSheetFile.size > 0) {
+      const buffer = Buffer.from(await technicalSheetFile.arrayBuffer());
+      technicalSheetUrl = await uploadDocumentToCloudinary(buffer); // You may want a separate upload function for non-image files
+    }
   let fields = formData.get('fields')?.toString();
   const files = formData.getAll('images') as File[];
 
@@ -96,10 +97,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
         description,
         categoryId: categoryId || undefined,
         subCategoryId: subCategoryId || undefined,
-        stepOne,
-        stepTwo,
-        stepThree,
-        stepFour,
+        technicalSheet: technicalSheetUrl || undefined,
       },
     });
 
@@ -155,6 +153,10 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
         customImageId,
       })),
       ...machineImages.map((customImageId: string) => ({
+        productId: id,
+        customImageId,
+      })),
+      ...stepsImages.map((customImageId: string) => ({
         productId: id,
         customImageId,
       })),

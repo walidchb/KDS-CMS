@@ -49,7 +49,13 @@ export default function ViewImageModal({ isOpen, image, onClose }: Props) {
         <div>
           <label className="block font-medium mb-1">Type</label>
           <div className="border border-gray-300 p-2 rounded bg-gray-50">
-            {imageDetails?.type || "N/A"}
+            {imageDetails?.type
+              ? imageDetails.type === 1
+                ? "characteristic"
+                : imageDetails.type === 2
+                ? "machine"
+                : "steps"
+              : "N/A"}
           </div>
         </div>
 

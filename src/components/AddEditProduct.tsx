@@ -8,6 +8,7 @@ import ProductsStore from "@/stores/products";
 import Dropdown from "./DropDown";
 import ButtonWithIcon from "./ButtonWithIcon";
 import CustomImagesStore from "@/stores/customImages";
+import { FaFileDownload } from "react-icons/fa";
 
 interface Props {
   isOpen?: boolean;
@@ -38,11 +39,14 @@ export default function AddEditProductModal({
   const [description, setDescription] = useState("");
   const [table, setTable] = useState<string[][]>([[""]]);
   const [images, setImages] = useState<ImageType[]>([]);
+  const [TechnicalSheet, setTechnicalSheet] = useState<File | string | null>(
+    null
+  );
+  // const [TechnicalSheetUrl, setTechnicalSheetUrl] = useState<string | null>(
+  //   null
+  // );
+
   const { dataCustomImages, fetchDataCustomImages } = CustomImagesStore();
-  const [stepOne, setStepOne] = useState("");
-  const [stepTwo, setStepTwo] = useState("");
-  const [stepThree, setStepThree] = useState("");
-  const [stepFour, setStepFour] = useState("");
 
   useEffect(() => {
     if (isOpen) {
@@ -110,6 +114,7 @@ export default function AddEditProductModal({
   const [selectedMachineImages, setSelectedMachineImages] = useState<string[]>(
     []
   );
+  const [selectedStepsImages, setSelectedStepsImages] = useState<string[]>([]);
 
   const handleCategoryChange = (value: string | null) => {
     const found = dataCategories?.data?.find(
@@ -172,10 +177,14 @@ export default function AddEditProductModal({
           .map((img: any) => img.customImage.id) || []
       );
 
-      setStepOne(productDetails?.stepOne || "");
-      setStepTwo(productDetails?.stepTwo || "");
-      setStepThree(productDetails?.stepThree || "");
-      setStepFour(productDetails?.stepFour || "");
+      setSelectedStepsImages(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        productDetails?.customImages
+          ?.filter((img: any) => img.customImage.type === 3)
+          .map((img: any) => img.customImage.id) || []
+      );
+
+      setTechnicalSheet(productDetails?.technicalSheet || null);
 
       if (productDetails?.DynamicProduct?.length > 0) {
         const fields: Record<string, string[] | string> =
@@ -277,6 +286,20 @@ export default function AddEditProductModal({
     }
   };
 
+  const handleTechnicalSheetChange = (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const files = e.target.files;
+    if (files) {
+      if (files.length > 0 && files[0].size > 0) {
+        setTechnicalSheet(files[0]);
+      } else {
+        setTechnicalSheet(null);
+      }
+      // setTechnicalSheet(files[0]);
+    }
+  };
+
   const removeImage = (index: number) => {
     const updated = [...images];
     updated.splice(index, 1);
@@ -290,6 +313,10 @@ export default function AddEditProductModal({
       );
     } else if (type === 2) {
       setSelectedMachineImages((prev) =>
+        prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]
+      );
+    } else if (type === 3) {
+      setSelectedStepsImages((prev) =>
         prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]
       );
     }
@@ -348,10 +375,8 @@ export default function AddEditProductModal({
       JSON.stringify(selectedCharacteristicImages)
     );
     formdata.append("machineImages", JSON.stringify(selectedMachineImages));
-    formdata.append("stepOne", stepOne);
-    formdata.append("stepTwo", stepTwo);
-    formdata.append("stepThree", stepThree);
-    formdata.append("stepFour", stepFour);
+    formdata.append("stepsImages", JSON.stringify(selectedStepsImages));
+    formdata.append("technicalSheet", TechnicalSheet || "");
 
     // console.log(JSON.stringify(formdata));
     // for (const [key, value] of formdata.entries()) {
@@ -365,6 +390,20 @@ export default function AddEditProductModal({
       addProduct(`/products`, formdata);
     }
   };
+
+  async function downloadFile(url: string, filename: string) {
+    const response = await fetch(url);
+    const blob = await response.blob();
+
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = filename; // 👈 your custom filename
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    URL.revokeObjectURL(link.href); // cleanup
+  }
 
   if (!isOpen && !product) return null;
 
@@ -642,6 +681,35 @@ export default function AddEditProductModal({
           </div>
         </div>
 
+        {/* --- Characteristic Images --- */}
+        <div>
+          <label className="block font-medium mb-1">Select Steps Images</label>
+          <div className="flex flex-wrap gap-3">
+            {dataCustomImages
+              ?.filter((img: any) => img.type === 3)
+              .map((img: any) => (
+                <div
+                  key={img.id}
+                  onClick={() => toggleImageSelection(img.id, 3)}
+                  className={`cursor-pointer flex flex-col justify-center items-center border-2 rounded  w-32 h-32  ${
+                    selectedStepsImages.includes(img.id)
+                      ? "border-blue-600"
+                      : "border-gray-300"
+                  }`}
+                >
+                  {/* <div className=" bg-yellow-300 "> */}
+                  <img
+                    src={img.image}
+                    alt="characteristic"
+                    className="w-24 h-24 object-cover"
+                  />
+                  <span className="block text-center">{img.name}sds</span>
+                  {/* </div> */}
+                </div>
+              ))}
+          </div>
+        </div>
+
         {/* --- Machine Images --- */}
         <div>
           <label className="block font-medium mb-1 mt-4">
@@ -674,42 +742,28 @@ export default function AddEditProductModal({
         {/* --- End of Machine Images --- */}
 
         <div>
-          <label className="block font-medium mb-1">Step One</label>
+          <label className="block font-medium mb-1">Technical Sheet</label>
+          {TechnicalSheet && typeof TechnicalSheet === "string" ? (
+            <div
+              onClick={() => {
+                if (typeof productDetails.technicalSheet === "string") {
+                  downloadFile(
+                    productDetails.technicalSheet,
+                    "technical_sheet.pdf"
+                  );
+                }
+              }}
+              className="flex items-center space-x-2 cursor-pointer"
+            >
+              <FaFileDownload />
+              <span>Download Technical Sheet</span>
+            </div>
+          ) : null}
           <input
-            value={stepOne}
-            onChange={(e) => setStepOne(e.target.value)}
-            className="w-full border border-gray-300 p-2 rounded"
-            placeholder="Enter Step One description"
-          />
-        </div>
-
-        <div>
-          <label className="block font-medium mb-1">Step Two</label>
-          <input
-            value={stepTwo}
-            onChange={(e) => setStepTwo(e.target.value)}
-            className="w-full border border-gray-300 p-2 rounded"
-            placeholder="Enter Step Two description"
-          />
-        </div>
-
-        <div>
-          <label className="block font-medium mb-1">Step Three</label>
-          <input
-            value={stepThree}
-            onChange={(e) => setStepThree(e.target.value)}
-            className="w-full border border-gray-300 p-2 rounded"
-            placeholder="Enter Step Three description"
-          />
-        </div>
-
-        <div>
-          <label className="block font-medium mb-1">Step Four</label>
-          <input
-            value={stepFour}
-            onChange={(e) => setStepFour(e.target.value)}
-            className="w-full border border-gray-300 p-2 rounded"
-            placeholder="Enter Step Four description"
+            type="file"
+            accept="application/pdf"
+            onChange={handleTechnicalSheetChange}
+            className="mb-2"
           />
         </div>
 

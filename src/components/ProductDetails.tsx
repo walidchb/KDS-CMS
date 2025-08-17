@@ -6,7 +6,7 @@ import ProductsStore from "@/stores/products";
 // import { useRouter } from "next/navigation";
 import TableLoader from "./TableLoader";
 import { IColumnType, Table } from "./Table";
-import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
+import { FaChevronLeft, FaChevronRight, FaFileDownload } from "react-icons/fa";
 import useEmblaCarousel from "embla-carousel-react";
 
 interface Props {
@@ -96,6 +96,20 @@ export default function ViewProductModal({ isOpen, product, onClose }: Props) {
 
     return result;
   };
+
+  async function downloadFile(url: string, filename: string) {
+    const response = await fetch(url);
+    const blob = await response.blob();
+
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = filename; // 👈 your custom filename
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    URL.revokeObjectURL(link.href); // cleanup
+  }
 
   // const transformedData = transformData(
   //   productDetails?.DynamicProduct[0]
@@ -324,6 +338,33 @@ export default function ViewProductModal({ isOpen, product, onClose }: Props) {
           </div>
         )}
 
+        {/* steps images */}
+
+        {productDetails?.customImages?.filter(
+          (img) => img.customImage.type === 3
+        ).length > 0 && <label className="block  font-bold my-8">Steps</label>}
+        {productDetails?.customImages?.filter(
+          (img) => img.customImage.type === 3
+        ).length > 0 && (
+          <div className="flex  flex-wrap flex-row gap-y-8 justify-start items-start">
+            {productDetails?.customImages
+              .filter((img) => img.customImage.type === 3)
+              .map((img, index) => (
+                <div
+                  className="  mx-2 flex flex-col items-center justify-center"
+                  key={index}
+                >
+                  <img
+                    src={img.customImage.image}
+                    alt={`Characteristic Image ${index}`}
+                    className="rounded-lg h-32 w-32"
+                  />
+                  <div className="text-center mt-1">{img.customImage.name}</div>
+                </div>
+              ))}{" "}
+          </div>
+        )}
+
         {/* machine images */}
         {productDetails?.customImages?.filter(
           (img) => img.customImage.type === 1
@@ -350,38 +391,27 @@ export default function ViewProductModal({ isOpen, product, onClose }: Props) {
           </div>
         )}
 
-        {/* step one */}
-        {productDetails?.stepOne && (
-          <div>
-            <label className="block  font-bold my-4">Step One :</label>
-            <div>{productDetails?.stepOne}</div>
-          </div>
-        )}
-
-        {/* step two */}
-        {productDetails?.stepTwo && (
-          <div>
-            <label className="block  font-bold my-4">Step Two :</label>
-            <div>{productDetails?.stepTwo}</div>
-          </div>
-        )}
-
-        {/* step three */}
-        {productDetails?.stepThree && (
-          <div>
-            <label className="block  font-bold my-4">Step Three :</label>
-            <div>{productDetails?.stepThree}</div>
-          </div>
-        )}
-
-        {/* step four */}
-        {productDetails?.stepFour && (
-          <div>
-            <label className="block  font-bold my-4">Step Four :</label>
-            <div>{productDetails?.stepFour}</div>
-          </div>
-        )}
-
+        <div className="flex justify-end gap-4 mt-6">
+          {/* <label className="block  font-bold my-8">Technical Sheet</label> */}
+          {productDetails?.technicalSheet ? (
+            <div
+              onClick={() => {
+                if (typeof productDetails.technicalSheet === "string") {
+                  downloadFile(
+                    productDetails.technicalSheet,
+                    "technical_sheet.pdf"
+                  );
+                }
+              }}
+              className="flex items-center space-x-2 cursor-pointer"
+            >
+              <FaFileDownload />
+              <span>Download Technical Sheet</span>
+            </div>
+          ) : (
+            <div className="text-gray-500">No technical sheet available</div>
+          )}
+        </div>
         {/* Close Button */}
         {/* <div className="flex justify-end mt-6">
           <button

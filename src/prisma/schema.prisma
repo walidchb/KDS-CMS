@@ -37,16 +37,13 @@ model Product {
   description     String
   categoryId      String? // Made optional
   subCategoryId   String? // Made optional
-  stepOne         String?
-  stepTwo         String?
-  stepThree       String?
-  stepFour        String?
   Category        Category?            @relation(fields: [categoryId], references: [id])
   SubCategory     SubCategory?         @relation(fields: [subCategoryId], references: [id])
   ListDescription listDescription[]
   DynamicProduct  DynamicProduct[]
   ImageProduct    ImageProduct[]
   customImages    ProductCustomImage[] // <-- Many-to-many relation
+  technicalSheet  String?
 }
 
 model listDescription {

@@ -42,6 +42,7 @@ interface AppState {
             
             image: string;
         }>;
+        technicalSheet?: string | File| null; // Assuming technicalSheet is a string URL
         customImages: Array<{
             customImage: {
                 id: string;
@@ -50,10 +51,7 @@ interface AppState {
                 type: number; // Assuming type is a number
             };
         }>;
-        stepOne?: string;
-        stepTwo?: string;
-        stepThree?: string;
-        stepFour?: string;
+       
     };
     successProductDetails: boolean;
     errorGetProductDetails: string | null;
@@ -140,10 +138,7 @@ const ProductsStore = create<AppState>((set) => ({
         ],
         ImageProduct: [],
         customImages: [],
-        stepOne: "",
-        stepTwo: "",
-        stepThree: "",
-        stepFour: "",
+        technicalSheet: "", // Assuming technicalSheet is a string URL
     },
     successProductDetails: false,
     errorGetProductDetails: null,
@@ -236,10 +231,8 @@ console.log("products", response.data);
             ],
             ImageProduct: [],
             customImages: [],
-            stepOne: "",
-            stepTwo: "",
-            stepThree: "",
-            stepFour: "",
+            technicalSheet: "", // Assuming technicalSheet is a string URL
+           
         }, errorGetProductDetails: null, loadingProductDetails: false });
     },
     resetDynamicTable: () => {

@@ -6,7 +6,7 @@ import cloudinary from '@/lib/cloudinary';
  * @param folder - Cloudinary folder
  * @returns URL of the uploaded image
  */
-export default async function uploadImageToCloudinary(
+export async function uploadImageToCloudinary(
   image: string | Buffer,
   folder: string = 'products'
 ): Promise<string> {
@@ -30,5 +30,40 @@ export default async function uploadImageToCloudinary(
   } catch (err) {
     console.error('Cloudinary upload failed:', err);
     throw new Error('Image upload failed');
+  }
+}
+
+
+/**
+ * Uploads a PDF or DOC/DOCX file to Cloudinary
+ * @param file - Buffer, base64 string, or file path
+ * @param folder - Cloudinary folder
+ * @returns URL of the uploaded file
+ */
+
+export async function uploadDocumentToCloudinary(
+  file: string | Buffer,
+  folder: string = 'documents'
+): Promise<string> {
+  try {
+    let fileToUpload: string;
+
+    if (typeof file === 'string') {
+      fileToUpload = file; // file path or base64 string
+    } else {
+      const base64 = file.toString('base64');
+      fileToUpload = `data:application/octet-stream;base64,${base64}`;
+    }
+
+    const result = await cloudinary.uploader.upload(fileToUpload, {
+      folder,
+      resource_type: 'raw', // <-- important for non-image files
+      allowed_formats: ['pdf', 'doc', 'docx'],
+    });
+
+    return result.secure_url;
+  } catch (err) {
+    console.error('Cloudinary document upload failed:', err);
+    throw new Error('Document upload failed');
   }
 }
