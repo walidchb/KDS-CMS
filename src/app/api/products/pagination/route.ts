@@ -17,7 +17,17 @@ export async function GET(req: NextRequest) {
         skip,
         take: limit,
         where: {
-          ...(name && { name: { contains: name, mode: 'insensitive' } }),
+          ...(name && {
+            OR: [
+              { name: { contains: name, mode: 'insensitive' } },
+              { ref: { contains: name, mode: 'insensitive' } },
+              { specName: { contains: name, mode: 'insensitive' } },
+              { description: { contains: name, mode: 'insensitive' } },
+              { Category: { name: { contains: name, mode: 'insensitive' } } },
+              { SubCategory: { name: { contains: name, mode: 'insensitive' } } },
+              { ListDescription: { some: { description: { contains: name, mode: 'insensitive' } } } },
+            ],
+          }),
           ...(categoryId && { categoryId }),
           ...(subCategoryId && { subCategoryId }),
         },
@@ -47,7 +57,23 @@ export async function GET(req: NextRequest) {
           },
         },
       }),
-      prisma.product.count(),
+      prisma.product.count({
+        where: {
+          ...(name && {
+            OR: [
+              { name: { contains: name, mode: 'insensitive' } },
+              { ref: { contains: name, mode: 'insensitive' } },
+              { specName: { contains: name, mode: 'insensitive' } },
+              { description: { contains: name, mode: 'insensitive' } },
+              { Category: { name: { contains: name, mode: 'insensitive' } } },
+              { SubCategory: { name: { contains: name, mode: 'insensitive' } } },
+              { ListDescription: { some: { description: { contains: name, mode: 'insensitive' } } } },
+            ],
+          }),
+          ...(categoryId && { categoryId }),
+          ...(subCategoryId && { subCategoryId }),
+        },
+      }),
     ]);
 
     return NextResponse.json({
@@ -61,6 +87,9 @@ export async function GET(req: NextRequest) {
     });
   } catch (err) {
     console.error(err);
-    return NextResponse.json({ error: 'Failed to fetch paginated products.' }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Failed to fetch paginated products.' },
+      { status: 500 }
+    );
   }
 }

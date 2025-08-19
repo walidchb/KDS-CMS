@@ -344,7 +344,9 @@ export default function ProductsContent(): JSX.Element {
                 type="text"
                 id="email"
                 name="email"
-                className="min-w-[300px]  w-full sm:w-[48%] lg:w-[30%]"
+                // className={` min-w-[300px] flex justify-center items-center  px-4 bg-white text-gray-600 border-[0.5px] border-gray-200 w-full sm:w-[48%] lg:w-[30%]  h-[40px]   rounded-full focus:ring-2 focus:outline-none
+                // `}
+                className="min-w-[300px]   w-full sm:w-[48%] lg:w-[30%]"
                 value={name}
                 onChange={(e: { target: { value: string | null } }) =>
                   handleNameChange(e.target.value)
@@ -366,7 +368,12 @@ export default function ProductsContent(): JSX.Element {
                   )?.name
                 }
                 setValue={handleCategoryChange}
-                // onClear={handleClear}
+                onClear={() => {
+                  setSelectedCategory(null);
+                  setSelectedSubCategory(null);
+
+                  router.push(`?page=${page}&&name=${name}`); // Reset to page 1 when category is cleared
+                }}
               />
               {selectedCategory && dataSubcategories?.length != 0 && (
                 <Dropdown

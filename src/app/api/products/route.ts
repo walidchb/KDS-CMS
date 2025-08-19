@@ -55,6 +55,17 @@ export async function GET(req: NextRequest) {
 
 // POST create product
 export async function POST(req: NextRequest) {
+  const contentType = req.headers.get('content-type') || '';
+  if (
+    !contentType.startsWith('multipart/form-data') &&
+    !contentType.startsWith('application/x-www-form-urlencoded')
+  ) {
+    return NextResponse.json(
+      { error: 'Invalid Content-Type. Must be multipart/form-data or application/x-www-form-urlencoded.' },
+      { status: 400 }
+    );
+  }
+
   const formData = await req.formData();
 
   const name = formData.get('name')?.toString() ?? '';
@@ -64,6 +75,7 @@ export async function POST(req: NextRequest) {
   const categoryId = formData.get('categoryId')?.toString() || null;
   const subCategoryId = formData.get('subCategoryId')?.toString() || null;
   const listDescription = JSON.parse(formData.get('listDescription')?.toString() ?? '[]') || [];
+  const tables = JSON.parse(formData.get('tables')?.toString() ?? '[]') || [];
   const files = formData.getAll('images') as File[];
   const technicalSheetFile = formData.get('technicalSheet') as File | null;
   let technicalSheetUrl = '';
@@ -122,6 +134,19 @@ export async function POST(req: NextRequest) {
       await prisma.productCustomImage.createMany({
         data: customImagesData,
       });
+    }
+
+    if (Array.isArray(tables) && tables.length > 0) {
+      for (const table of tables) {
+      if (table.fields && Object.keys(table.fields).length > 0) {
+        await prisma.dynamicProduct.create({
+        data: {
+          productId: product.id,
+          fields: table.fields,
+        },
+        });
+      }
+      }
     }
 
     for (const file of files) {

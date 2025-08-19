@@ -171,38 +171,68 @@ export default function ViewProductModal({ isOpen, product, onClose }: Props) {
         {/* ref */}
         <div>
           <label className="block  font-bold mb-4">Ref</label>
-          <div className="border border-gray-300 p-2 rounded bg-gray-50">
-            {productDetails?.ref}
+          <div
+            className={`border ${
+              productDetails?.ref
+                ? "border-gray-300 bg-gray-50"
+                : "border-gray-300 bg-gray-400"
+            } p-3 rounded  whitespace-pre-wrap`}
+          >
+            {productDetails?.ref || "no Ref found"}
           </div>
         </div>
 
         {/* Name */}
         <div>
           <label className="block  font-bold mb-4">Name</label>
-          <div className="border border-gray-300 p-2 rounded bg-gray-50">
-            {productDetails?.name}
+          <div
+            className={`border ${
+              productDetails?.name
+                ? "border-gray-300 bg-gray-50"
+                : "border-gray-300 bg-gray-400"
+            } p-3 rounded  whitespace-pre-wrap`}
+          >
+            {productDetails?.name || "no Name found"}
           </div>
         </div>
 
         {/* spec name */}
         <div>
           <label className="block  font-bold mb-4">Spec Name</label>
-          <div className="border border-gray-300 p-2 rounded bg-gray-50">
-            {productDetails?.specName}
+          <div
+            className={`border ${
+              productDetails?.specName
+                ? "border-gray-300 bg-gray-50"
+                : "border-gray-300 bg-gray-400"
+            } p-3 rounded  whitespace-pre-wrap`}
+          >
+            {productDetails?.specName || "no Spec Name found"}
           </div>
         </div>
 
         <div className="flex space-x-2 justify-between items-center">
           <div className="w-1/2">
             <label className="block  font-bold mb-4">Category</label>
-            <div className="border border-gray-300 p-2 rounded bg-gray-50">
-              {productDetails?.Category?.name}
+            <div
+              className={`border ${
+                productDetails?.Category?.name
+                  ? "border-gray-300 bg-gray-50"
+                  : "border-gray-300 bg-gray-400"
+              } p-3 rounded  whitespace-pre-wrap`}
+            >
+              {productDetails?.Category?.name || "no Category found"}
             </div>
           </div>
           <div className="w-1/2">
             <label className="block  font-bold mb-4">Sub categpry</label>
-            <div className="border border-gray-300 p-2 rounded bg-gray-50">
-              {productDetails?.SubCategory?.name}
+            <div
+              className={`border ${
+                productDetails?.SubCategory?.name
+                  ? "border-gray-300 bg-gray-50"
+                  : "border-gray-300 bg-gray-400"
+              } p-3 rounded  whitespace-pre-wrap`}
+            >
+              {productDetails?.SubCategory?.name || "no SubCategory found"}
             </div>
           </div>
         </div>
@@ -228,8 +258,14 @@ export default function ViewProductModal({ isOpen, product, onClose }: Props) {
         {/* Description */}
         <div>
           <label className="block  font-bold mb-4">Description</label>
-          <div className="border border-gray-300 p-3 rounded bg-gray-50 whitespace-pre-wrap">
-            {productDetails?.description}
+          <div
+            className={`border ${
+              productDetails?.description
+                ? "border-gray-300 bg-gray-50"
+                : "border-gray-300 bg-gray-400"
+            } p-3 rounded  whitespace-pre-wrap`}
+          >
+            {productDetails?.description || "no Description found"}
           </div>
         </div>
 
@@ -261,10 +297,16 @@ export default function ViewProductModal({ isOpen, product, onClose }: Props) {
         {loadingProductDetails ? (
           <TableLoader />
         ) : productDetails?.DynamicProduct?.length !== 0 ? (
-          <Table
-            data={transformData(productDetails?.DynamicProduct[0]?.fields)}
-            columns={generateColumns(productDetails?.DynamicProduct[0]?.fields)}
-          />
+          productDetails.DynamicProduct.map((item, index) => {
+            return (
+              <div key={index} className="w-full">
+                <Table
+                  data={transformData(item.fields)}
+                  columns={generateColumns(item.fields)}
+                />
+              </div>
+            );
+          })
         ) : null}
 
         {/* ✅ Carousel with Embla Carousel starts here */}

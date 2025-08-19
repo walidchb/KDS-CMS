@@ -1,6 +1,7 @@
 "use client";
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { useState, useEffect } from "react";
+import type React from "react";
+import { useState, useEffect } from "react";
 import Modal from "./Modal";
 import { IoMdAdd } from "react-icons/io";
 import { IoTrashOutline } from "react-icons/io5";
@@ -23,6 +24,12 @@ interface Props {
 
 type ImageType = File | string;
 
+interface TableData {
+  id: string;
+  name: string;
+  data: string[][];
+}
+
 export default function AddEditProductModal({
   // dataCategories,
   // dataSubcategories,
@@ -37,14 +44,25 @@ export default function AddEditProductModal({
   const [ref, setRef] = useState("");
   const [bullets, setBullets] = useState<string[]>([]);
   const [description, setDescription] = useState("");
-  const [table, setTable] = useState<string[][]>([[""]]);
+  const [tables, setTables] = useState<TableData[]>([
+    { id: "1", name: "Table 1", data: [["Header 1"]] },
+  ]);
   const [images, setImages] = useState<ImageType[]>([]);
   const [TechnicalSheet, setTechnicalSheet] = useState<File | string | null>(
     null
   );
-  // const [TechnicalSheetUrl, setTechnicalSheetUrl] = useState<string | null>(
-  //   null
-  // );
+
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [selectedSubCategory, setSelectedSubCategory] = useState<string | null>(
+    null
+  );
+
+  const [selectedCharacteristicImages, setSelectedCharacteristicImages] =
+    useState<string[]>([]);
+  const [selectedMachineImages, setSelectedMachineImages] = useState<string[]>(
+    []
+  );
+  const [selectedStepsImages, setSelectedStepsImages] = useState<string[]>([]);
 
   const { dataCustomImages, fetchDataCustomImages } = CustomImagesStore();
 
@@ -53,6 +71,7 @@ export default function AddEditProductModal({
       fetchDataCustomImages("/customImages");
     }
   }, [isOpen]);
+
   const {
     fetchDataCategories,
     dataCategories,
@@ -104,18 +123,6 @@ export default function AddEditProductModal({
     }
   }, [successProductDetails]);
 
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const [selectedSubCategory, setSelectedSubCategory] = useState<string | null>(
-    null
-  );
-
-  const [selectedCharacteristicImages, setSelectedCharacteristicImages] =
-    useState<string[]>([]);
-  const [selectedMachineImages, setSelectedMachineImages] = useState<string[]>(
-    []
-  );
-  const [selectedStepsImages, setSelectedStepsImages] = useState<string[]>([]);
-
   const handleCategoryChange = (value: string | null) => {
     const found = dataCategories?.data?.find(
       (cat: { name: string }) => cat.name === value
@@ -139,7 +146,6 @@ export default function AddEditProductModal({
 
   useEffect(() => {
     if (selectedCategory) {
-      // console.log("lkjhg");
       fetchDataSubcategories(`/subcategories/${selectedCategory}/category`);
     }
   }, [selectedCategory]);
@@ -153,32 +159,24 @@ export default function AddEditProductModal({
       setSelectedCategory(productDetails?.Category?.id || null);
       setSelectedSubCategory(productDetails?.SubCategory?.id || null);
       setBullets(
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         productDetails?.ListDescription?.map((item: any) => item.description) ||
           []
       );
       setImages(
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         productDetails?.ImageProduct?.map((img: any) => img.image) || []
       );
       setSelectedCharacteristicImages(
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         productDetails?.customImages
           ?.filter((img: any) => img.customImage.type === 1)
-          .map(
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            (img: any) => img.customImage.id
-          ) || []
+          .map((img: any) => img.customImage.id) || []
       );
       setSelectedMachineImages(
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         productDetails?.customImages
           ?.filter((img: any) => img.customImage.type === 2)
           .map((img: any) => img.customImage.id) || []
       );
 
       setSelectedStepsImages(
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         productDetails?.customImages
           ?.filter((img: any) => img.customImage.type === 3)
           .map((img: any) => img.customImage.id) || []
@@ -187,49 +185,64 @@ export default function AddEditProductModal({
       setTechnicalSheet(productDetails?.technicalSheet || null);
 
       if (productDetails?.DynamicProduct?.length > 0) {
-        const fields: Record<string, string[] | string> =
-          productDetails.DynamicProduct[0].fields;
+        const tablesData: TableData[] = productDetails.DynamicProduct.map(
+          (dynamicProduct: any, index: number) => {
+            const fields: Record<string, string[] | string> =
+              dynamicProduct.fields;
 
-        if (fields) {
-          const headers = Object.keys(fields);
-          let numRows = 0;
+            if (fields) {
+              const headers = Object.keys(fields);
+              let numRows = 0;
 
-          // First, normalize all values to arrays
-          const normalizedFields: Record<string, string[]> = {};
+              const normalizedFields: Record<string, string[]> = {};
 
-          headers.forEach((header) => {
-            const value = fields[header];
-            if (Array.isArray(value)) {
-              normalizedFields[header] = value;
-            } else if (typeof value === "string") {
-              normalizedFields[header] = [value];
-            } else {
-              normalizedFields[header] = [""];
+              headers.forEach((header) => {
+                const value = fields[header];
+                if (Array.isArray(value)) {
+                  normalizedFields[header] = value;
+                } else if (typeof value === "string") {
+                  normalizedFields[header] = [value];
+                } else {
+                  normalizedFields[header] = [""];
+                }
+              });
+
+              numRows = normalizedFields[headers[0]]?.length || 0;
+
+              const formattedTable: string[][] = [];
+              formattedTable.push(headers);
+
+              for (let i = 0; i < numRows; i++) {
+                const row = headers.map(
+                  (header) => normalizedFields[header][i] || ""
+                );
+                formattedTable.push(row);
+              }
+
+              return {
+                id: (index + 1).toString(),
+                name: `Table ${index + 1}`,
+                data: formattedTable,
+              };
             }
-          });
 
-          numRows = normalizedFields[headers[0]]?.length || 0;
-
-          const formattedTable: string[][] = [];
-          formattedTable.push(headers);
-
-          for (let i = 0; i < numRows; i++) {
-            const row = headers.map(
-              (header) => normalizedFields[header][i] || ""
-            );
-            formattedTable.push(row);
+            return {
+              id: (index + 1).toString(),
+              name: `Table ${index + 1}`,
+              data: [["Header 1"]],
+            };
           }
+        );
 
-          setTable(formattedTable);
-        }
+        setTables(tablesData);
       } else {
-        setTable([[""]]);
+        setTables([{ id: "1", name: "Table 1", data: [["Header 1"]] }]);
       }
     } else {
       setName("");
       setBullets([]);
       setDescription("");
-      setTable([[""]]);
+      setTables([{ id: "1", name: "Table 1", data: [["Header 1"]] }]);
       setImages([]);
     }
   }, [productDetails, isOpen]);
@@ -247,36 +260,74 @@ export default function AddEditProductModal({
     setBullets(updated);
   };
 
-  const handleCellChange = (row: number, col: number, value: string) => {
-    const updated = [...table];
-    updated[row][col] = value;
-    setTable(updated);
+  const handleCellChange = (
+    tableId: string,
+    row: number,
+    col: number,
+    value: string
+  ) => {
+    setTables(
+      tables.map((table) => {
+        if (table.id === tableId) {
+          const updated = [...table.data];
+          updated[row][col] = value;
+          return { ...table, data: updated };
+        }
+        return table;
+      })
+    );
   };
 
-  const addRow = () => {
-    const cols = table[0]?.length || 1;
-    setTable([...table, Array(cols).fill("")]);
+  const addRow = (tableId: string) => {
+    setTables(
+      tables.map((table) => {
+        if (table.id === tableId) {
+          const cols = table.data[0]?.length || 1;
+          return { ...table, data: [...table.data, Array(cols).fill("")] };
+        }
+        return table;
+      })
+    );
   };
 
-  const addCol = () => setTable(table.map((row) => [...row, ""]));
-
-  const removeRow = (rowIndex: number) => {
-    if (table.length > 1) {
-      const updated = [...table];
-      updated.splice(rowIndex, 1);
-      setTable(updated);
-    }
+  const addCol = (tableId: string) => {
+    setTables(
+      tables.map((table) => {
+        if (table.id === tableId) {
+          return { ...table, data: table.data.map((row) => [...row, ""]) };
+        }
+        return table;
+      })
+    );
   };
 
-  const removeCol = (colIndex: number) => {
-    if (table[0].length > 1) {
-      const updated = table.map((row) => {
-        const newRow = [...row];
-        newRow.splice(colIndex, 1);
-        return newRow;
-      });
-      setTable(updated);
-    }
+  const removeRow = (tableId: string, rowIndex: number) => {
+    setTables(
+      tables.map((table) => {
+        if (table.id === tableId && table.data.length > 1) {
+          const updated = [...table.data];
+          updated.splice(rowIndex, 1);
+          return { ...table, data: updated };
+        }
+        return table;
+      })
+    );
+  };
+
+  const removeCol = (tableId: string, colIndex: number) => {
+    setTables(
+      tables.map((table) => {
+        if (table.id === tableId && table.data[0].length > 1) {
+          const updated = table.data.map((row) => {
+            const newRow = [...row];
+            newRow.splice(colIndex, 1);
+            return newRow;
+          });
+          return { ...table, data: updated };
+        }
+        return table;
+      })
+    );
   };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -296,7 +347,6 @@ export default function AddEditProductModal({
       } else {
         setTechnicalSheet(null);
       }
-      // setTechnicalSheet(files[0]);
     }
   };
 
@@ -325,13 +375,9 @@ export default function AddEditProductModal({
   const handleSubmit = () => {
     const formdata = new FormData();
 
-    // if ()
-
     if (images.length > 0) {
-      // console.log("image");
       images.forEach((image) => {
         if (image instanceof File) {
-          // console.log(image);
           formdata.append("images", image);
         }
       });
@@ -345,27 +391,33 @@ export default function AddEditProductModal({
     }
 
     if (bullets.length > 0) {
-      // bullets.forEach((bullet) => {
       formdata.append("listDescription", JSON.stringify(bullets));
-      // });
     }
 
-    if (table.length > 1) {
-      const fields: Record<string, string[]> = {};
-      const headers = table[0];
+    if (tables.length > 0) {
+      const tablesData = tables.map((table) => {
+        if (table.data.length > 1) {
+          const fields: Record<string, string[]> = {};
+          const headers = table.data[0];
 
-      for (let i = 1; i < table.length; i++) {
-        const row = table[i];
-        headers.forEach((header, index) => {
-          if (!fields[header]) {
-            fields[header] = [];
+          for (let i = 1; i < table.data.length; i++) {
+            const row = table.data[i];
+            headers.forEach((header, index) => {
+              if (!fields[header]) {
+                fields[header] = [];
+              }
+              fields[header].push(row[index] || "");
+            });
           }
-          fields[header].push(row[index] || "");
-        });
-      }
 
-      formdata.append("fields", JSON.stringify(fields));
+          return { fields };
+        }
+        return { fields: {} };
+      });
+
+      formdata.append("tables", JSON.stringify(tablesData));
     }
+
     formdata.append("name", name);
     formdata.append("description", description);
     formdata.append("specName", specName);
@@ -378,12 +430,6 @@ export default function AddEditProductModal({
     formdata.append("stepsImages", JSON.stringify(selectedStepsImages));
     formdata.append("technicalSheet", TechnicalSheet || "");
 
-    // console.log(JSON.stringify(formdata));
-    // for (const [key, value] of formdata.entries()) {
-    //   console.log(`${key}:`, value);
-    // }
-
-    // console.log("formData", formdata);
     if (isEdit) {
       patchProduct(`/products/${product}/`, formdata);
     } else {
@@ -397,13 +443,39 @@ export default function AddEditProductModal({
 
     const link = document.createElement("a");
     link.href = URL.createObjectURL(blob);
-    link.download = filename; // 👈 your custom filename
+    link.download = filename;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
 
-    URL.revokeObjectURL(link.href); // cleanup
+    URL.revokeObjectURL(link.href);
   }
+
+  const addTable = () => {
+    const newId = (tables.length + 1).toString();
+    setTables([
+      ...tables,
+      {
+        id: newId,
+        name: `Table ${tables.length + 1}`,
+        data: [["Header 1"]],
+      },
+    ]);
+  };
+
+  const removeTable = (tableId: string) => {
+    if (tables.length > 1) {
+      setTables(tables.filter((table) => table.id !== tableId));
+    }
+  };
+
+  const updateTableName = (tableId: string, newName: string) => {
+    setTables(
+      tables.map((table) =>
+        table.id === tableId ? { ...table, name: newName } : table
+      )
+    );
+  };
 
   if (!isOpen && !product) return null;
 
@@ -428,10 +500,9 @@ export default function AddEditProductModal({
     <Modal onClose={onClose}>
       <div className="max-h-[90vh] overflow-y-auto p-6 space-y-4">
         <h2 className="text-2xl font-semibold text-black">
-          {isEdit ? "Edit Product" : "Add Producttt"}
+          {isEdit ? "Edit Product" : "Add Product"}
         </h2>
 
-        {/* Name */}
         <div>
           <label className="block font-medium mb-1">Referance</label>
           <input
@@ -460,7 +531,6 @@ export default function AddEditProductModal({
           />
         </div>
 
-        {/* Category */}
         <div className="flex justify-start items-center gap-4 flex-wrap">
           <Dropdown
             className="min-w-[300px] w-full sm:w-[48%] lg:w-[30%]"
@@ -500,7 +570,6 @@ export default function AddEditProductModal({
           )}
         </div>
 
-        {/* Bullets */}
         <div>
           <label className="block font-medium mb-1">Des tirets</label>
           {bullets.map((bullet, i) => (
@@ -525,7 +594,6 @@ export default function AddEditProductModal({
           </button>
         </div>
 
-        {/* Description */}
         <div>
           <label className="block font-medium mb-1">Description</label>
           <textarea
@@ -536,7 +604,6 @@ export default function AddEditProductModal({
           />
         </div>
 
-        {/* Images */}
         <div>
           <label className="block font-medium mb-1">Images</label>
           <input
@@ -572,85 +639,115 @@ export default function AddEditProductModal({
           </div>
         </div>
 
-        {/* Table */}
         <div>
-          <label className="block font-medium mb-2">Table</label>
-          <div className="overflow-auto rounded-md">
-            <table className="min-w-full  text-center">
-              <thead>
-                <tr className="h-[30px] ">
-                  {table[0].map((header, colIndex) => (
-                    <th key={colIndex} className="relative p-">
-                      {/* {header} */}
-                      <button
-                        onClick={() => removeCol(colIndex)}
-                        className=" bg-red-500 text-white rounded-full w-5 h-5 text-xs"
-                      >
-                        ✕
-                      </button>
-                    </th>
-                  ))}
-                  <th className="p-2 " />
-                </tr>
-              </thead>
+          <div className="flex justify-between items-center mb-4">
+            <label className="block font-medium">Tables</label>
+            <button
+              onClick={addTable}
+              className="text-sm text-green-600 flex items-center gap-1 px-3 py-1 border border-green-600 rounded"
+            >
+              <IoMdAdd /> Add Table
+            </button>
+          </div>
 
-              <tbody>
-                {table.map((row, rowIndex) => (
-                  <tr className={``} key={rowIndex}>
-                    {row.map((cell, colIndex) => (
-                      <td
-                        key={colIndex}
-                        className={`${
-                          rowIndex === 0
-                            ? "bg-blue-200"
-                            : "border border-gray-300"
-                        }  p-2`}
-                      >
-                        <input
-                          value={cell}
-                          onChange={(e) =>
-                            handleCellChange(rowIndex, colIndex, e.target.value)
-                          }
-                          className="w-full border border-gray-200 p-1 rounded"
-                        />
-                      </td>
+          {tables.map((table) => (
+            <div
+              key={table.id}
+              className="border border-gray-200 rounded-lg p-4 mb-4"
+            >
+              <div className="flex justify-between items-center mb-3">
+                <input
+                  value={table.name}
+                  onChange={(e) => updateTableName(table.id, e.target.value)}
+                  className="font-medium text-lg border-b border-gray-300 bg-transparent focus:outline-none focus:border-blue-500"
+                  placeholder="Table name"
+                />
+                {tables.length > 1 && (
+                  <button
+                    onClick={() => removeTable(table.id)}
+                    className="text-red-500 hover:text-red-700 flex items-center gap-1 text-sm"
+                  >
+                    <IoTrashOutline /> Remove Table
+                  </button>
+                )}
+              </div>
+
+              <div className="overflow-auto rounded-md">
+                <table className="min-w-full text-center">
+                  <thead>
+                    <tr className="h-[30px]">
+                      {table.data[0].map((header, colIndex) => (
+                        <th key={colIndex} className="relative p-2">
+                          <button
+                            onClick={() => removeCol(table.id, colIndex)}
+                            className="bg-red-500 text-white rounded-full w-5 h-5 text-xs"
+                          >
+                            ✕
+                          </button>
+                        </th>
+                      ))}
+                      <th className="p-2" />
+                    </tr>
+                  </thead>
+
+                  <tbody>
+                    {table.data.map((row, rowIndex) => (
+                      <tr key={rowIndex}>
+                        {row.map((cell, colIndex) => (
+                          <td
+                            key={colIndex}
+                            className={`${
+                              rowIndex === 0
+                                ? "bg-blue-200"
+                                : "border border-gray-300"
+                            } p-2`}
+                          >
+                            <input
+                              value={cell}
+                              onChange={(e) =>
+                                handleCellChange(
+                                  table.id,
+                                  rowIndex,
+                                  colIndex,
+                                  e.target.value
+                                )
+                              }
+                              className="w-full border border-gray-200 p-1 rounded"
+                            />
+                          </td>
+                        ))}
+                        <td>
+                          <button
+                            onClick={() => removeRow(table.id, rowIndex)}
+                            className="ml-2 bg-red-500 text-white rounded-full w-5 h-5 text-xs"
+                          >
+                            ✕
+                          </button>
+                        </td>
+                      </tr>
                     ))}
-                    <td>
-                      <button
-                        onClick={() => removeRow(rowIndex)}
-                        className="ml-2 bg-red-500 text-white rounded-full w-5 h-5 text-xs"
-                      >
-                        ✕
-                      </button>
-                      {/* <button
-                        
-                        className="text-red-500 text-xs"
-                      >
-                        Remove Row
-                      </button> */}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          <div className="flex gap-4 mt-2">
-            <button
-              onClick={addRow}
-              className="text-sm text-green-600 flex items-center gap-1"
-            >
-              <IoMdAdd /> Add Row
-            </button>
-            <button
-              onClick={addCol}
-              className="text-sm text-green-600 flex items-center gap-1"
-            >
-              <IoMdAdd /> Add Column
-            </button>
-          </div>
+                  </tbody>
+                </table>
+              </div>
+
+              <div className="flex gap-4 mt-2">
+                <button
+                  onClick={() => addRow(table.id)}
+                  className="text-sm text-green-600 flex items-center gap-1"
+                >
+                  <IoMdAdd /> Add Row
+                </button>
+                <button
+                  onClick={() => addCol(table.id)}
+                  className="text-sm text-green-600 flex items-center gap-1"
+                >
+                  <IoMdAdd /> Add Column
+                </button>
+              </div>
+            </div>
+          ))}
         </div>
 
-        {/* --- Characteristic Images --- */}
         <div>
           <label className="block font-medium mb-1">
             Select Characteristic Images
@@ -662,26 +759,23 @@ export default function AddEditProductModal({
                 <div
                   key={img.id}
                   onClick={() => toggleImageSelection(img.id, 1)}
-                  className={`cursor-pointer flex flex-col justify-center items-center border-2 rounded  w-32 h-32  ${
+                  className={`cursor-pointer flex flex-col justify-center items-center border-2 rounded w-32 h-32 ${
                     selectedCharacteristicImages.includes(img.id)
                       ? "border-blue-600"
                       : "border-gray-300"
                   }`}
                 >
-                  {/* <div className=" bg-yellow-300 "> */}
                   <img
-                    src={img.image}
+                    src={img.image || "/placeholder.svg"}
                     alt="characteristic"
                     className="w-24 h-24 object-cover"
                   />
-                  <span className="block text-center">{img.name}sds</span>
-                  {/* </div> */}
+                  <span className="block text-center">{img.name}</span>
                 </div>
               ))}
           </div>
         </div>
 
-        {/* --- Characteristic Images --- */}
         <div>
           <label className="block font-medium mb-1">Select Steps Images</label>
           <div className="flex flex-wrap gap-3">
@@ -691,26 +785,23 @@ export default function AddEditProductModal({
                 <div
                   key={img.id}
                   onClick={() => toggleImageSelection(img.id, 3)}
-                  className={`cursor-pointer flex flex-col justify-center items-center border-2 rounded  w-32 h-32  ${
+                  className={`cursor-pointer flex flex-col justify-center items-center border-2 rounded w-32 h-32 ${
                     selectedStepsImages.includes(img.id)
                       ? "border-blue-600"
                       : "border-gray-300"
                   }`}
                 >
-                  {/* <div className=" bg-yellow-300 "> */}
                   <img
-                    src={img.image}
+                    src={img.image || "/placeholder.svg"}
                     alt="characteristic"
                     className="w-24 h-24 object-cover"
                   />
-                  <span className="block text-center">{img.name}sds</span>
-                  {/* </div> */}
+                  <span className="block text-center">{img.name}</span>
                 </div>
               ))}
           </div>
         </div>
 
-        {/* --- Machine Images --- */}
         <div>
           <label className="block font-medium mb-1 mt-4">
             Select Machine Images
@@ -729,17 +820,15 @@ export default function AddEditProductModal({
                   }`}
                 >
                   <img
-                    src={img.image}
+                    src={img.image || "/placeholder.svg"}
                     alt="machine"
                     className="w-full h-full object-cover"
                   />
-                  <span>{img.name}sdsd</span>
+                  <span>{img.name}</span>
                 </div>
               ))}
           </div>
         </div>
-
-        {/* --- End of Machine Images --- */}
 
         <div>
           <label className="block font-medium mb-1">Technical Sheet</label>
@@ -767,7 +856,6 @@ export default function AddEditProductModal({
           />
         </div>
 
-        {/* Actions */}
         <div className="flex justify-end gap-4 mt-6">
           <button
             onClick={onClose}
