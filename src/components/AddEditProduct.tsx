@@ -383,6 +383,11 @@ export default function AddEditProductModal({
       });
     }
 
+    const existingImages = images.filter((image) => typeof image === "string");
+    if (existingImages.length > 0) {
+      formdata.append("existingImages", JSON.stringify(existingImages));
+    }
+
     if (selectedCategory) {
       formdata.append("categoryId", selectedCategory);
     }
