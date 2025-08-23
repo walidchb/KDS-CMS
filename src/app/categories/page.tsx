@@ -7,7 +7,6 @@ import {
   IoChevronUpOutline,
 } from "react-icons/io5";
 import { IColumnType, Table } from "@/components/Table";
-import { useRouter } from "next/navigation";
 
 import ButtonWithIcon from "@/components/ButtonWithIcon";
 import { IoMdAdd } from "react-icons/io";
@@ -15,6 +14,8 @@ import AddEditCatSubCat from "@/components/AddEditCatSubCat";
 import DeleteConfirmationModal from "@/components/DeleteConfirmationModal";
 import CategoryStore from "@/stores/category";
 import SuccessFailerAlert from "@/components/AlertSuccessfailer";
+import NavigationTabs from "@/components/NavBar";
+import { useRouter } from "next/navigation";
 
 interface SubCategory {
   id: number;
@@ -262,45 +263,25 @@ export default function CategoryContent(): JSX.Element {
     setSubMode(false);
   };
 
+  const handleLogout = async () => {
+    await fetch("/api/auth/logout", { method: "POST" });
+    router.replace("/login"); // redirect to login
+  };
+
   return (
     <div className="min-h-screen w-screen bg-gray-100">
       {/* Tabs */}
-      <div className=" flex shadow-2xl rounded-b-2xl overflow-hidden w-full mb-4">
-        <button
-          onClick={() => {
-            router.replace("/products");
-          }}
-          className={`px-4 cursor-pointer w-full h-[60px] bg-gray-200 text-black`}
-        >
-          Products
-        </button>
-        <button
-          onClick={() => {
-            router.replace("/categories");
-          }}
-          className={`px-4 border-x-2 border-gray-400 cursor-pointer w-full h-[60px]  bg-red-500 text-white`}
-        >
-          Categories / Sub-Categories
-        </button>
-        <button
-          onClick={() => {
-            router.replace("/customImages");
-          }}
-          className={`px-4 cursor-pointer w-full h-[60px]  bg-gray-200 text-black`}
-        >
-          Images
-        </button>
-      </div>
+      <NavigationTabs current="categories" />
 
       {/* Content */}
       <div className="space-y-4  p-10 text-black">
         <div className="flex justify-between items-center  mb-10 w-full">
           <h3 className="text-4xl  font-semibold text-red-700">
-            Categories and Sub categories
+            Catégories / Sous-catégories
           </h3>
           <ButtonWithIcon
             className="bg-gray-600 px-2 h-10 text-white"
-            label="Add category"
+            label="Ajouter une catégorie"
             icon={<IoMdAdd className="text-white" />}
             onClick={() => handleAddCategory()}
           />
@@ -311,7 +292,7 @@ export default function CategoryContent(): JSX.Element {
             <div className="w-16 h-16 border-4 border-red-700 border-dashed rounded-full animate-spin"></div>
 
             <p className="text-sm text-gray-400 mt-2">
-              Loading, please wait...
+              Chargement, veuillez patienter...
             </p>
           </div>
         )}
@@ -338,7 +319,7 @@ export default function CategoryContent(): JSX.Element {
                 <div className="flex  justify-start items-center  gap-4">
                   <ButtonWithIcon
                     className="bg-blue-500 px-2 h-10 text-white"
-                    label="Add Sub-category"
+                    label="Ajouter une sous-catégorie"
                     icon={<IoMdAdd className="text-white" />}
                     onClick={(e) => {
                       e.stopPropagation();
@@ -409,6 +390,13 @@ export default function CategoryContent(): JSX.Element {
             />
           </div>
         )}
+
+        <button
+          onClick={handleLogout}
+          className="px-4 py-2 bg-red-500 text-white rounded"
+        >
+          Logout
+        </button>
       </div>
     </div>
   );

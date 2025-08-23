@@ -48,7 +48,7 @@ export default function ViewProductModal({ isOpen, product, onClose }: Props) {
     // addProduct,
   } = ProductsStore();
 
-  console.log(productDetails);
+  // console.log(productDetails);
   // const images = [
   //   `https://picsum.photos/200/300?random=5`,
   //   `https://picsum.photos/200/300?random=6`,
@@ -151,7 +151,9 @@ export default function ViewProductModal({ isOpen, product, onClose }: Props) {
         <div className="h-full flex justify-center flex-col items-center animate-pulse">
           <div className="w-16 h-16 border-4 border-red-700 border-dashed rounded-full animate-spin"></div>
 
-          <p className="text-sm text-gray-400 mt-2">Loading, please wait...</p>
+          <p className="text-sm text-gray-400 mt-2">
+            Chargement, veuillez patienter...
+          </p>
         </div>
       </Modal>
     );
@@ -160,7 +162,9 @@ export default function ViewProductModal({ isOpen, product, onClose }: Props) {
     <Modal onClose={onClose}>
       <div className="max-h-[90vh] overflow-y-auto p-6 space-y-4">
         <div className="flex justify-between items-center">
-          <h2 className="text-2xl font-semibold text-black">Product Details</h2>
+          <h2 className="text-2xl font-semibold text-black">
+            Détails du produit
+          </h2>
           <button
             onClick={onClose}
             className="text-2xl text-gray-500 hover:text-black"
@@ -170,7 +174,7 @@ export default function ViewProductModal({ isOpen, product, onClose }: Props) {
         </div>
         {/* ref */}
         <div>
-          <label className="block  font-bold mb-4">Ref</label>
+          <label className="block  font-bold mb-4">Référence</label>
           <div
             className={`border ${
               productDetails?.ref
@@ -178,13 +182,13 @@ export default function ViewProductModal({ isOpen, product, onClose }: Props) {
                 : "border-gray-300 bg-gray-400"
             } p-3 rounded  whitespace-pre-wrap`}
           >
-            {productDetails?.ref || "no Ref found"}
+            {productDetails?.ref || "Aucune référence trouvée"}
           </div>
         </div>
 
         {/* Name */}
         <div>
-          <label className="block  font-bold mb-4">Name</label>
+          <label className="block  font-bold mb-4">Nom</label>
           <div
             className={`border ${
               productDetails?.name
@@ -192,13 +196,13 @@ export default function ViewProductModal({ isOpen, product, onClose }: Props) {
                 : "border-gray-300 bg-gray-400"
             } p-3 rounded  whitespace-pre-wrap`}
           >
-            {productDetails?.name || "no Name found"}
+            {productDetails?.name || "Aucun nom trouvé"}
           </div>
         </div>
 
         {/* spec name */}
         <div>
-          <label className="block  font-bold mb-4">Spec Name</label>
+          <label className="block  font-bold mb-4">Nom spécifique</label>
           <div
             className={`border ${
               productDetails?.specName
@@ -206,13 +210,13 @@ export default function ViewProductModal({ isOpen, product, onClose }: Props) {
                 : "border-gray-300 bg-gray-400"
             } p-3 rounded  whitespace-pre-wrap`}
           >
-            {productDetails?.specName || "no Spec Name found"}
+            {productDetails?.specName || "Aucun Nom spécifique trouvé"}
           </div>
         </div>
 
         <div className="flex space-x-2 justify-between items-center">
           <div className="w-1/2">
-            <label className="block  font-bold mb-4">Category</label>
+            <label className="block  font-bold mb-4">Catégorie</label>
             <div
               className={`border ${
                 productDetails?.Category?.name
@@ -220,11 +224,11 @@ export default function ViewProductModal({ isOpen, product, onClose }: Props) {
                   : "border-gray-300 bg-gray-400"
               } p-3 rounded  whitespace-pre-wrap`}
             >
-              {productDetails?.Category?.name || "no Category found"}
+              {productDetails?.Category?.name || "Aucune catégorie trouvée"}
             </div>
           </div>
           <div className="w-1/2">
-            <label className="block  font-bold mb-4">Sub categpry</label>
+            <label className="block  font-bold mb-4">Sous-catégorie</label>
             <div
               className={`border ${
                 productDetails?.SubCategory?.name
@@ -232,14 +236,15 @@ export default function ViewProductModal({ isOpen, product, onClose }: Props) {
                   : "border-gray-300 bg-gray-400"
               } p-3 rounded  whitespace-pre-wrap`}
             >
-              {productDetails?.SubCategory?.name || "no SubCategory found"}
+              {productDetails?.SubCategory?.name ||
+                "Aucune sous-catégorie trouvée"}
             </div>
           </div>
         </div>
 
         {/* Bullets */}
         <div>
-          <label className="block  font-bold mb-4">Des tirets</label>
+          <label className="block  font-bold mb-4">Specifications</label>
           {productDetails?.ListDescription?.length !== 0 ? (
             <ul className="px-[30px] border border-gray-300 py-2 rounded bg-gray-50 list-disc space-y-1">
               {productDetails?.ListDescription?.map(
@@ -250,7 +255,7 @@ export default function ViewProductModal({ isOpen, product, onClose }: Props) {
             </ul>
           ) : (
             <div className="px-[10px] border border-gray-300 py-2 rounded bg-gray-50">
-              no data found
+              Aucune Specifications trouvé
             </div>
           )}
         </div>
@@ -265,7 +270,7 @@ export default function ViewProductModal({ isOpen, product, onClose }: Props) {
                 : "border-gray-300 bg-gray-400"
             } p-3 rounded  whitespace-pre-wrap`}
           >
-            {productDetails?.description || "no Description found"}
+            {productDetails?.description || "Aucun description trouvé"}
           </div>
         </div>
 
@@ -356,7 +361,9 @@ export default function ViewProductModal({ isOpen, product, onClose }: Props) {
         {productDetails?.customImages?.filter(
           (img) => img.customImage.type === 1
         ).length > 0 && (
-          <label className="block  font-bold my-8">Characteristic Images</label>
+          <label className="block  font-bold my-8">
+            Images caractéristiques
+          </label>
         )}
         {productDetails?.customImages?.filter(
           (img) => img.customImage.type === 1
@@ -384,7 +391,7 @@ export default function ViewProductModal({ isOpen, product, onClose }: Props) {
 
         {productDetails?.customImages?.filter(
           (img) => img.customImage.type === 3
-        ).length > 0 && <label className="block  font-bold my-8">Steps</label>}
+        ).length > 0 && <label className="block  font-bold my-8">Étapes</label>}
         {productDetails?.customImages?.filter(
           (img) => img.customImage.type === 3
         ).length > 0 && (
@@ -411,7 +418,7 @@ export default function ViewProductModal({ isOpen, product, onClose }: Props) {
         {productDetails?.customImages?.filter(
           (img) => img.customImage.type === 1
         ).length > 0 && (
-          <label className="block  font-bold my-8">Machine Images</label>
+          <label className="block  font-bold my-8">Images des machines</label>
         )}
         {productDetails?.customImages?.length > 0 && (
           <div className="flex  flex-wrap flex-row gap-y-8 justify-start items-start">
@@ -448,10 +455,12 @@ export default function ViewProductModal({ isOpen, product, onClose }: Props) {
               className="flex items-center space-x-2 cursor-pointer"
             >
               <FaFileDownload />
-              <span>Download Technical Sheet</span>
+              <span>Télécharger la fiche technique</span>
             </div>
           ) : (
-            <div className="text-gray-500">No technical sheet available</div>
+            <div className="text-gray-500">
+              Aucune fiche technique disponible
+            </div>
           )}
         </div>
         {/* Close Button */}

@@ -27,7 +27,7 @@ const ButtonWithIcon: React.FC<ButtonProps> = ({
       } ${className}`}
     >
       {loading ? (
-        <span className="mr-2">Loading...</span>
+        <span className="mr-2">`Chargement`...</span>
       ) : (
         <>
           {icon && <span className="mr-2">{icon}</span>}

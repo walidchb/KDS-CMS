@@ -16,6 +16,7 @@ import SuccessFailerAlert from "@/components/AlertSuccessfailer";
 import { useRouter, useSearchParams } from "next/navigation";
 import ViewImageModal from "./ImageDetails";
 import { FaRegEye } from "react-icons/fa";
+import NavigationTabs from "./NavBar";
 
 interface ImageItem {
   id: string;
@@ -188,42 +189,23 @@ export default function ImagesContent(): JSX.Element {
     },
   ];
 
+  const handleLogout = async () => {
+    await fetch("/api/auth/logout", { method: "POST" });
+    router.replace("/login"); // redirect to login
+  };
+
   return (
     <Suspense fallback={<div>Loading...</div>}>
       <div className="min-h-screen bg-gray-100 ">
-        <div className=" flex shadow-2xl rounded-b-2xl overflow-hidden w-full ">
-          <button
-            onClick={() => {
-              router.replace("/products");
-            }}
-            className={`px-4 cursor-pointer w-full h-[60px] bg-gray-200 text-black`}
-          >
-            Products
-          </button>
-          <button
-            onClick={() => {
-              router.replace("/categories");
-            }}
-            className={`px-4 border-x-2 border-gray-400 cursor-pointer w-full h-[60px]  bg-gray-200 text-black`}
-          >
-            Categories / Sub-Categories
-          </button>
-          <button
-            onClick={() => {
-              router.replace("/customImages");
-            }}
-            className={`px-4 cursor-pointer w-full h-[60px] bg-red-500 text-white `}
-          >
-            Images
-          </button>
-        </div>
+        <NavigationTabs current="images" />
+
         <div className="p-10">
           <div className="flex justify-between items-center mb-10">
             <h3 className="text-3xl font-bold text-red-700">Images</h3>
             <div className="flex flex-wrap gap-2 items-center">
               <ButtonWithIcon
                 className="bg-green-600 px-3 h-10 text-white"
-                label="Add Image"
+                label="Ajouter une image"
                 icon={<IoMdAdd className="text-white" />}
                 onClick={handleAddImage}
               />
@@ -267,6 +249,13 @@ export default function ImagesContent(): JSX.Element {
               />
             </div>
           )}
+
+          <button
+            onClick={handleLogout}
+            className="px-4 py-2 bg-red-500 text-white rounded"
+          >
+            Logout
+          </button>
         </div>
       </div>
     </Suspense>

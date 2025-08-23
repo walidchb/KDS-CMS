@@ -49,8 +49,8 @@ export async function POST(req: NextRequest) {
     const buffer = Buffer.from(await file.arrayBuffer());
     const imageUrl = await uploadImageToCloudinary(buffer);
 
-    console.log(buffer);
-    console.log(imageUrl);
+    // console.log(buffer);
+    // console.log(imageUrl);
     const customImage = await prisma.customImage.create({
       data: {
         name: typeof name === "string" ? name : undefined,

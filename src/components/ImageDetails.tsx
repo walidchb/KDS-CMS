@@ -28,7 +28,9 @@ export default function ViewImageModal({ isOpen, image, onClose }: Props) {
     <Modal onClose={onClose}>
       <div className="max-h-[90vh] overflow-y-auto p-6 space-y-4 text-black">
         <div className="flex justify-between items-center">
-          <h2 className="text-2xl font-semibold text-black">Image Details</h2>
+          <h2 className="text-2xl font-semibold text-black">
+            {"Détails d'image"}
+          </h2>
           <button
             onClick={onClose}
             className="text-2xl text-gray-500 hover:text-black"
@@ -39,7 +41,7 @@ export default function ViewImageModal({ isOpen, image, onClose }: Props) {
 
         {/* Name */}
         <div>
-          <label className="block font-medium mb-1">Name</label>
+          <label className="block font-medium mb-1">Nom</label>
           <div className="border border-gray-300 p-2 rounded bg-gray-50">
             {imageDetails?.name || "N/A"}
           </div>
@@ -72,7 +74,7 @@ export default function ViewImageModal({ isOpen, image, onClose }: Props) {
             </div>
           </div>
         ) : (
-          <div className="text-gray-400">No image available</div>
+          <div className="text-gray-400">Aucune image disponible</div>
         )}
       </div>
     </Modal>

@@ -19,6 +19,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Pagination from "@/components/Pagination";
 import SuccessFailerAlert from "@/components/AlertSuccessfailer";
 import InputWithIcon from "@/components/InputWithIcon";
+import NavigationTabs from "./NavBar";
 
 interface Product {
   id: string;
@@ -81,6 +82,11 @@ export default function ProductsContent(): JSX.Element {
   // const searchParams = useSearchParams();
   // const pageParam = searchParams.get("page");
 
+  const handleLogout = async () => {
+    await fetch("/api/auth/logout", { method: "POST" });
+    router.replace("/login"); // redirect to login
+  };
+
   const updateQueryParams = (
     key: string,
     value: string | null,
@@ -106,7 +112,13 @@ export default function ProductsContent(): JSX.Element {
 
   const handleNameChange = (value: string | null) => {
     setName(value || "");
-    // updateQueryParams("name", value);
+    if (value === null || value === "") {
+      const searchParams = new URLSearchParams(window.location.search);
+      searchParams.set("page", "1");
+      searchParams.delete("name");
+
+      router.push(`?${searchParams.toString()}`);
+    }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -273,11 +285,11 @@ export default function ProductsContent(): JSX.Element {
       categoryParam ? `&categoryId=${categoryParam}` : ""
     }${subCategoryParam ? `&subCategoryId=${subCategoryParam}` : ""}`;
 
-    console.log("add", successAddProduct);
-    console.log("delete", successDelete);
-    console.log("patch", successPatch);
+    // console.log("add", successAddProduct);
+    // console.log("delete", successDelete);
+    // console.log("patch", successPatch);
     if (successAddProduct || successDelete || successPatch) {
-      console.log("kmlna");
+      // console.log("kmlna");
       fetchDataProducts(query);
       handleModalClose();
     }
@@ -304,43 +316,18 @@ export default function ProductsContent(): JSX.Element {
     <Suspense fallback={<div>.</div>}>
       <div className="min-h-screen w-screen bg-gray-100">
         {/* Tabs */}
-        <div className=" flex shadow-2xl rounded-b-2xl overflow-hidden w-full mb-4">
-          <button
-            onClick={() => {
-              router.replace("/products");
-            }}
-            className={`px-4 cursor-pointer w-full h-[60px] bg-red-500 text-white`}
-          >
-            Products
-          </button>
-          <button
-            onClick={() => {
-              router.replace("/categories");
-            }}
-            className={`px-4 border-x-2 border-gray-400 cursor-pointer w-full h-[60px]  bg-gray-200 text-black`}
-          >
-            Categories / Sub-Categories
-          </button>
-          <button
-            onClick={() => {
-              router.replace("/customImages");
-            }}
-            className={`px-4 cursor-pointer w-full h-[60px]  bg-gray-200 text-black`}
-          >
-            Images
-          </button>
-        </div>
+        <NavigationTabs current="products" />
 
         {/* Content */}
         <div className="space-y-4 p-10 text-black">
           <div className="flex  flex-wrap justify-between items-center mb-10 w-full">
-            <h3 className="text-4xl font-semibold text-red-700">Products</h3>
+            <h3 className="text-4xl font-semibold text-red-700">Produits</h3>
             <div className="flex justify-center space-x-2 items-center flex-wrap">
               <InputWithIcon
                 onKeyDown={handleKeyDown}
                 // label="Search"
                 icon={<CiSearch className="text-gray-600" />}
-                placeholder={"search product"}
+                placeholder={"Rechercher un produit..."}
                 type="text"
                 id="email"
                 name="email"
@@ -355,7 +342,7 @@ export default function ProductsContent(): JSX.Element {
 
               <Dropdown
                 className="min-w-[300px]  w-full sm:w-[48%] lg:w-[30%]"
-                placeholder={"Category"}
+                placeholder={"Catégorie"}
                 items={
                   dataCategories?.data?.map(
                     (category: { name: string }) => category.name
@@ -378,7 +365,7 @@ export default function ProductsContent(): JSX.Element {
               {selectedCategory && dataSubcategories?.length != 0 && (
                 <Dropdown
                   className="min-w-[300px]  w-full sm:w-[48%] lg:w-[30%]"
-                  placeholder={"sous-catégorie"}
+                  placeholder={"Sous-catégorie"}
                   items={
                     dataSubcategories?.map(
                       (subcategory: { name: string }) => subcategory.name
@@ -397,7 +384,7 @@ export default function ProductsContent(): JSX.Element {
             </div>
             <ButtonWithIcon
               className="bg-green-600 px-3 h-10 text-white"
-              label="Add Product"
+              label="Ajouter un produit"
               icon={<IoMdAdd className="text-white" />}
               onClick={handleAddProduct}
             />
@@ -454,6 +441,12 @@ export default function ProductsContent(): JSX.Element {
               />
             </div>
           )}
+          <button
+            onClick={handleLogout}
+            className="px-4 py-2 bg-red-500 text-white rounded"
+          >
+            Logout
+          </button>
         </div>
       </div>
     </Suspense>

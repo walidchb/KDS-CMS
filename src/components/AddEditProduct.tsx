@@ -496,7 +496,9 @@ export default function AddEditProductModal({
         <div className="h-full flex justify-center flex-col items-center animate-pulse">
           <div className="w-16 h-16 border-4 border-red-700 border-dashed rounded-full animate-spin"></div>
 
-          <p className="text-sm text-gray-400 mt-2">Loading, please wait...</p>
+          <p className="text-sm text-gray-400 mt-2">
+            Chargement, veuillez patienter...
+          </p>
         </div>
       </Modal>
     );
@@ -505,41 +507,41 @@ export default function AddEditProductModal({
     <Modal onClose={onClose}>
       <div className="max-h-[90vh] overflow-y-auto p-6 space-y-4">
         <h2 className="text-2xl font-semibold text-black">
-          {isEdit ? "Edit Product" : "Add Product"}
+          {isEdit ? "Modifier le produit" : "Ajouter un produit"}
         </h2>
 
         <div>
-          <label className="block font-medium mb-1">Referance</label>
+          <label className="block font-medium mb-1">Référence</label>
           <input
             value={ref}
             onChange={(e) => setRef(e.target.value)}
             className="w-full border border-gray-300 p-2 rounded"
-            placeholder="Enter The ref of the product"
+            placeholder="Entrez la référence du produit"
           />
         </div>
         <div>
-          <label className="block font-medium mb-1">Name</label>
+          <label className="block font-medium mb-1">Nom</label>
           <input
             value={name}
             onChange={(e) => setName(e.target.value)}
             className="w-full border border-gray-300 p-2 rounded"
-            placeholder="Enter product name"
+            placeholder="Entrez le nom du produit"
           />
         </div>
         <div>
-          <label className="block font-medium mb-1">Specific Name</label>
+          <label className="block font-medium mb-1">Nom spécifique</label>
           <input
             value={specName}
             onChange={(e) => setSpecName(e.target.value)}
             className="w-full border border-gray-300 p-2 rounded"
-            placeholder="Enter specific name of the product"
+            placeholder="Entrez le nom spécifique du produit"
           />
         </div>
 
         <div className="flex justify-start items-center gap-4 flex-wrap">
           <Dropdown
             className="min-w-[300px] w-full sm:w-[48%] lg:w-[30%]"
-            placeholder="Category"
+            placeholder="Catégorie"
             items={
               dataCategories?.data?.map(
                 (category: { name: string }) => category.name
@@ -576,14 +578,14 @@ export default function AddEditProductModal({
         </div>
 
         <div>
-          <label className="block font-medium mb-1">Des tirets</label>
+          <label className="block font-medium mb-1">Specifications</label>
           {bullets.map((bullet, i) => (
             <div key={i} className="flex items-center gap-2 mb-2">
               <input
                 value={bullet}
                 onChange={(e) => handleBulletChange(i, e.target.value)}
                 className="flex-1 border border-gray-300 p-2 rounded"
-                placeholder={`Tiret ${i + 1}`}
+                placeholder={`specification ${i + 1}`}
               />
               <IoTrashOutline
                 onClick={() => removeBullet(i)}
@@ -595,7 +597,7 @@ export default function AddEditProductModal({
             onClick={addBullet}
             className="text-sm text-blue-600 flex items-center gap-1 mt-2"
           >
-            <IoMdAdd /> Add Tiret
+            <IoMdAdd /> Ajouter une specification
           </button>
         </div>
 
@@ -605,7 +607,7 @@ export default function AddEditProductModal({
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             className="w-full border border-gray-300 p-2 rounded min-h-[100px]"
-            placeholder="Enter product description"
+            placeholder="Entrez la description du produit"
           />
         </div>
 
@@ -646,12 +648,12 @@ export default function AddEditProductModal({
 
         <div>
           <div className="flex justify-between items-center mb-4">
-            <label className="block font-medium">Tables</label>
+            <label className="block font-medium">Tableaux</label>
             <button
               onClick={addTable}
               className="text-sm text-green-600 flex items-center gap-1 px-3 py-1 border border-green-600 rounded"
             >
-              <IoMdAdd /> Add Table
+              <IoMdAdd /> Ajouter un tableau
             </button>
           </div>
 
@@ -672,7 +674,7 @@ export default function AddEditProductModal({
                     onClick={() => removeTable(table.id)}
                     className="text-red-500 hover:text-red-700 flex items-center gap-1 text-sm"
                   >
-                    <IoTrashOutline /> Remove Table
+                    <IoTrashOutline /> Supprimer le tableau
                   </button>
                 )}
               </div>
@@ -740,13 +742,13 @@ export default function AddEditProductModal({
                   onClick={() => addRow(table.id)}
                   className="text-sm text-green-600 flex items-center gap-1"
                 >
-                  <IoMdAdd /> Add Row
+                  <IoMdAdd /> Ajouter une ligne
                 </button>
                 <button
                   onClick={() => addCol(table.id)}
                   className="text-sm text-green-600 flex items-center gap-1"
                 >
-                  <IoMdAdd /> Add Column
+                  <IoMdAdd /> Ajouter une colonne
                 </button>
               </div>
             </div>
@@ -755,7 +757,7 @@ export default function AddEditProductModal({
 
         <div>
           <label className="block font-medium mb-1">
-            Select Characteristic Images
+            Sélectionner les images caractéristiques
           </label>
           <div className="flex flex-wrap gap-3">
             {dataCustomImages
@@ -782,7 +784,9 @@ export default function AddEditProductModal({
         </div>
 
         <div>
-          <label className="block font-medium mb-1">Select Steps Images</label>
+          <label className="block font-medium mb-1">
+            Sélectionner les images des étapes
+          </label>
           <div className="flex flex-wrap gap-3">
             {dataCustomImages
               ?.filter((img: any) => img.type === 3)
@@ -809,7 +813,7 @@ export default function AddEditProductModal({
 
         <div>
           <label className="block font-medium mb-1 mt-4">
-            Select Machine Images
+            Sélectionner les images des machines
           </label>
           <div className="flex flex-wrap gap-3">
             {dataCustomImages
@@ -836,7 +840,7 @@ export default function AddEditProductModal({
         </div>
 
         <div>
-          <label className="block font-medium mb-1">Technical Sheet</label>
+          <label className="block font-medium mb-1">Fiche technique</label>
           {TechnicalSheet && typeof TechnicalSheet === "string" ? (
             <div
               onClick={() => {
@@ -850,7 +854,7 @@ export default function AddEditProductModal({
               className="flex items-center space-x-2 cursor-pointer"
             >
               <FaFileDownload />
-              <span>Download Technical Sheet</span>
+              <span>Télécharger la fiche technique</span>
             </div>
           ) : null}
           <input
@@ -866,11 +870,13 @@ export default function AddEditProductModal({
             onClick={onClose}
             className="px-4 py-2 border border-gray-300 rounded"
           >
-            Cancel
+            Annuler
           </button>
           <ButtonWithIcon
             onClick={handleSubmit}
-            label={isEdit ? "Save Changes" : "Add Product"}
+            label={
+              isEdit ? "Enregistrer les modifications" : "Ajouter un produit"
+            }
             className="px-4 py-2 bg-blue-600 text-white rounded"
             loading={loadingAddProduct || loadingPatch}
           />

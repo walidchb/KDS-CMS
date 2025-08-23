@@ -28,7 +28,7 @@ const Pagination: React.FC<PaginationProps> = ({
   return (
     <div className="flex justify-end space-x-2 items-center mt-4">
       <div className="text-gray-500 font-inter text-sm font-normal">
-        {"Showing"} {startIndex}-{endIndex} {"of"} {totalPages}
+        {"Affichage de"} {startIndex}-{endIndex} {"sur"} {totalPages}
       </div>
       <ul className="flex space-x-2">
         {currentPage > 1 && (

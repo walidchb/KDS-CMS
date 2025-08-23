@@ -63,10 +63,10 @@ export default function AddImageModal({ isOpen, onClose }: Props) {
   return (
     <Modal onClose={onClose}>
       <div className="max-h-[90vh] overflow-y-auto p-6 space-y-4 text-black">
-        <h2 className="text-2xl font-semibold text-black">Add Image</h2>
+        <h2 className="text-2xl font-semibold text-black">Ajouter une image</h2>
 
         <div>
-          <label className="block font-medium mb-1">Name</label>
+          <label className="block font-medium mb-1">Nom</label>
           <input
             value={name}
             onChange={(e) => setName(e.target.value)}
@@ -89,7 +89,7 @@ export default function AddImageModal({ isOpen, onClose }: Props) {
         </div>
 
         <div>
-          <label className="block font-medium mb-1">Images</label>
+          <label className="block font-medium mb-1">Image</label>
           <input
             type="file"
             accept="image/*"
@@ -128,12 +128,12 @@ export default function AddImageModal({ isOpen, onClose }: Props) {
             onClick={onClose}
             className="px-4 py-2 border border-gray-300 rounded"
           >
-            Cancel
+            Annuler
           </button>
           <ButtonWithIcon
             loading={loadingAddImage}
             onClick={handleSubmit}
-            label="Add Image"
+            label="Ajouter une image"
             className="px-4 py-2 bg-blue-600 text-white rounded"
           />
         </div>

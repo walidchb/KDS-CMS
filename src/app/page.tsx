@@ -8,7 +8,7 @@ export default function Home() {
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      Router.replace(`/products`);
+      Router.replace(`/login`);
     }, 2000);
 
     return () => clearTimeout(timer);
@@ -25,7 +25,9 @@ export default function Home() {
         <p className="mt-6 text-gray-500 text-xl font-semibold">
           Kreative Diagnostic System
         </p>
-        <p className="text-sm text-gray-400 mt-2">Loading, please wait...</p>
+        <p className="text-sm text-gray-400 mt-2">
+          Chargement, veuillez patienter...
+        </p>
       </div>
 
       {/* Footer */}

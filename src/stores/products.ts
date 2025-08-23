@@ -194,7 +194,7 @@ const ProductsStore = create<AppState>((set) => ({
         try {
             set({ loadingProducts: true, errorGetProducts: null });
             const response = await fetchData(endpoint);
-console.log("products", response.data);
+// console.log("products", response.data);
             set({ Dataproducts: response.data, loadingProducts: false });
         } catch (error: unknown) {
             set({ errorGetProducts: error instanceof Error ? error.message : String(error), loadingProducts: false });
