@@ -10,7 +10,7 @@ type AuthState = {
 };
 
 export const useAuthStore = create<AuthState>((set) => ({
-  email: "walidchebbab2001@gmail.com", // fixed
+  email: "cmkdslabs@gmail.com", // fixed
   otp: "",
   otpSent: false,
   setEmail: (email) => set({ email }),

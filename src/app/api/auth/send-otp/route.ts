@@ -4,7 +4,7 @@ import nodemailer from "nodemailer";
 export async function POST(req: Request) {
   const { email, otp } = await req.json();
 
-  const fixedEmail = "walidchebbab2001@gmail.com";
+  const fixedEmail = "cmkdslabs@gmail.com";
   if (email !== fixedEmail) {
     return NextResponse.json({ error: "Invalid email" }, { status: 400 });
   }
