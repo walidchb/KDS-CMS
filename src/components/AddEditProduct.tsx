@@ -1,7 +1,7 @@
 "use client";
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import type React from "react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Modal from "./Modal";
 import { IoMdAdd } from "react-icons/io";
 import { IoTrashOutline } from "react-icons/io5";
@@ -482,6 +482,17 @@ export default function AddEditProductModal({
     );
   };
 
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const technicalSheetInputRef = useRef<HTMLInputElement | null>(null);
+
+  const handleClickImageRef = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleClickTechnicalSheetRef = () => {
+    technicalSheetInputRef.current?.click();
+  };
+
   if (!isOpen && !product) return null;
 
   if (
@@ -614,12 +625,21 @@ export default function AddEditProductModal({
         <div>
           <label className="block font-medium mb-1">Images</label>
           <input
+            ref={fileInputRef}
             type="file"
             accept="image/*"
             multiple
             onChange={handleImageChange}
-            className="mb-2"
+            className="mb-2 hidden"
           />
+
+          <button
+            type="button"
+            onClick={handleClickImageRef}
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+          >
+            Ajouter photo(s)
+          </button>
           <div className="flex flex-wrap gap-4">
             {images.map((image, index) => (
               <div
@@ -857,12 +877,22 @@ export default function AddEditProductModal({
               <span>Télécharger la fiche technique</span>
             </div>
           ) : null}
+
           <input
+            ref={technicalSheetInputRef}
             type="file"
             accept="application/pdf"
             onChange={handleTechnicalSheetChange}
-            className="mb-2"
+            className="mb-2 hidden"
           />
+
+          <button
+            type="button"
+            onClick={handleClickTechnicalSheetRef}
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+          >
+            Ajouter la fiche technique
+          </button>
         </div>
 
         <div className="flex justify-end gap-4 mt-6">

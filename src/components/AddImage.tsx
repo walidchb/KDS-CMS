@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Modal from "./Modal";
 // import { IoMdAdd } from "react-icons/io";
 // import { IoTrashOutline } from "react-icons/io5";
@@ -58,6 +58,12 @@ export default function AddImageModal({ isOpen, onClose }: Props) {
     }
   }, [successAddImage, errorAddImage]);
 
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  const handleClickImageRef = () => {
+    fileInputRef.current?.click();
+  };
+
   if (!isOpen) return null;
 
   return (
@@ -91,12 +97,22 @@ export default function AddImageModal({ isOpen, onClose }: Props) {
         <div>
           <label className="block font-medium mb-1">Image</label>
           <input
+            ref={fileInputRef}
             type="file"
             accept="image/*"
             multiple
             onChange={handleImageChange}
-            className="mb-2"
+            className="mb-2 hidden"
           />
+
+          <button
+            type="button"
+            onClick={handleClickImageRef}
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+          >
+            Ajouter photo(s)
+          </button>
+
           <div className="flex flex-wrap gap-4">
             {images.map((image, index) => (
               <div
