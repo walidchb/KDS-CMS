@@ -48,9 +48,9 @@ export default function AddEditProductModal({
     { id: "1", name: "Table 1", data: [["Header 1"]] },
   ]);
   const [images, setImages] = useState<ImageType[]>([]);
-  const [TechnicalSheet, setTechnicalSheet] = useState<File | string | null>(
-    null
-  );
+  const [TechnicalSheet, setTechnicalSheet] = useState<
+    File | string | null | any
+  >(null);
 
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedSubCategory, setSelectedSubCategory] = useState<string | null>(
@@ -455,6 +455,10 @@ export default function AddEditProductModal({
 
     URL.revokeObjectURL(link.href);
   }
+
+  useEffect(() => {
+    console.log("ts", TechnicalSheet);
+  }, [TechnicalSheet]);
 
   const addTable = () => {
     const newId = (tables.length + 1).toString();
@@ -861,6 +865,50 @@ export default function AddEditProductModal({
 
         <div>
           <label className="block font-medium mb-1">Fiche technique</label>
+
+          {productDetails?.technicalSheet &&
+            typeof productDetails.technicalSheet === "string" && (
+              <div
+                onClick={() => {
+                  if (typeof productDetails.technicalSheet === "string") {
+                    downloadFile(
+                      productDetails.technicalSheet,
+                      "technical_sheet.pdf"
+                    );
+                  }
+                }}
+                className="flex items-center space-x-2 cursor-pointer text-blue-600 hover:underline mb-2"
+              >
+                <FaFileDownload />
+                <span>Télécharger la fiche technique</span>
+              </div>
+            )}
+
+          <input
+            ref={technicalSheetInputRef}
+            type="file"
+            accept="application/pdf"
+            onChange={handleTechnicalSheetChange}
+            className="hidden"
+          />
+
+          <button
+            type="button"
+            onClick={handleClickTechnicalSheetRef}
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+          >
+            Ajouter la fiche technique
+          </button>
+
+          {TechnicalSheet && (
+            <p className="mt-2 text-sm text-gray-700">
+              Fichier ajouté :{" "}
+              <strong>{TechnicalSheet.name || "fiche technique"}</strong>
+            </p>
+          )}
+        </div>
+        {/* <div>
+          <label className="block font-medium mb-1">Fiche technique</label>
           {TechnicalSheet && typeof TechnicalSheet === "string" ? (
             <div
               onClick={() => {
@@ -893,7 +941,7 @@ export default function AddEditProductModal({
           >
             Ajouter la fiche technique
           </button>
-        </div>
+        </div> */}
 
         <div className="flex justify-end gap-4 mt-6">
           <button

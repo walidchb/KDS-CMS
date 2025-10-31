@@ -6,6 +6,8 @@ import { useState } from "react";
 export default function LoginPage() {
   const { email, otp, otpSent, setOtp, setOtpSent } = useAuthStore();
   const [loadingSendOtp, setloadingSendOtp] = useState(false);
+  const [inputOtp, setInputOtp] = useState("");
+
   const sendOtp = async () => {
     const generatedOtp = Math.floor(100000 + Math.random() * 900000).toString();
     setOtp(generatedOtp);
@@ -21,13 +23,12 @@ export default function LoginPage() {
     setloadingSendOtp(false);
   };
 
-  const verifyOtp = async (inputOtp: string) => {
+  const verifyOtp = async () => {
     if (otp !== inputOtp) {
       alert("Invalid OTP");
       return;
     }
 
-    // OTP matches → create session
     const res = await fetch("/api/auth/set-session", {
       method: "POST",
       body: JSON.stringify({ email }),
@@ -39,12 +40,17 @@ export default function LoginPage() {
     }
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      verifyOtp();
+    }
+  };
+
   return (
     <div className="grid grid-rows-[auto_1fr_auto] items-center justify-items-center min-h-screen px-8 pb-20 pt-16 gap-12 sm:px-20 font-[family-name:var(--font-geist-sans)] bg-gray-100">
-      {/* KDS Logo */}
       <LogoKdsNavBarWeb />
 
-      <div className="flex flex-col items-center ">
+      <div className="flex flex-col items-center">
         {!otpSent ? (
           <button
             disabled={loadingSendOtp}
@@ -61,10 +67,18 @@ export default function LoginPage() {
               OTP envoyé à {email}
             </p>
             <input
-              onChange={(e) => verifyOtp(e.target.value)}
+              value={inputOtp}
+              onChange={(e) => setInputOtp(e.target.value)}
+              onKeyDown={handleKeyDown}
               placeholder="Entrez OTP"
-              className="border p-2 border-gray-500 rounded mb-4 text-black"
+              className="border p-2 border-gray-500 rounded mb-4 text-black text-center tracking-widest"
             />
+            <button
+              onClick={verifyOtp}
+              className="px-4 py-2 bg-blue-500 text-white rounded cursor-pointer hover:bg-blue-600 transition-colors"
+            >
+              Vérifier OTP
+            </button>
           </div>
         )}
       </div>
